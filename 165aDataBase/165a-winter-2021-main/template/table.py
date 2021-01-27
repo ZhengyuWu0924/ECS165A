@@ -14,6 +14,11 @@ class Record:
         self.rid = rid
         self.key = key
         self.columns = columns
+        
+    def get_Cur_Rid(self):
+        pass
+    def get_Next_AvailableRid():
+        pass
 
 class Table:
 
@@ -28,13 +33,13 @@ class Table:
         self.num_columns = num_columns
         self.page_directory = {}  ##'key' == 'index': record
         self.index = Index(self)
-        # self.record = Record()
         pass
-    
+    def create_page():
+        pass
+
     def create_record(self):
         pass
-    def get_Cur_Rid(self):
-        pass
+
     def __merge(self):
         pass
  
