@@ -15,9 +15,8 @@ class Page:
             return True
         self.has_cap =False
         return False
-        # pass
 
-    def write(self, value):
+    def writeRecord(self, value):
         cap = self.has_capacity()
         if cap == True:
             start = self.num_records * RECORD_SIZE
@@ -26,4 +25,19 @@ class Page:
             self.num_records += 1
         else:
             print('Page writing failed')
+            
+    def readRecord(self, recordOffset):
+        if recordOffset < 0 or recordOffset >= self.max_record_amount:
+            print("Offset out of range")
+            return -1
+        start = recordOffset * RECORD_SIZE
+        end = start + RECORD_SIZE
+        ret = self.data[start:end]
+        ret = int.from_bytes(ret, byteorder='big')
+        return ret
 
+    def get_record_amount(self):
+        return self.num_records
+
+    def get_record_data(self):
+        return self.data
