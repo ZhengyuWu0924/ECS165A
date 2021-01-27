@@ -26,10 +26,15 @@ class Table:
         self.name = name
         self.key = key
         self.num_columns = num_columns
-        self.page_directory = {}
+        self.page_directory = {}  ##'key' == 'index': record
         self.index = Index(self)
+        # self.record = Record()
         pass
-
+    
+    def create_record(self):
+        pass
+    def get_Cur_Rid(self):
+        pass
     def __merge(self):
         pass
  
