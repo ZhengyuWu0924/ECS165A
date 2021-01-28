@@ -3,11 +3,12 @@ from template.config import *
 
 class Page:
 
-    def __init__(self):
+    def __init__(self,page_key):
         self.num_records = 0
         self.data = bytearray(4096)
         self.max_record_amount = 4096/RECORD_SIZE
         self.has_cap = True
+        self.page_key = page_key
 
     def has_capacity(self):
         if self.num_records < self.max_record_amount:

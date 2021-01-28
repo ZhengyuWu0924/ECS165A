@@ -10,9 +10,9 @@ SCHEMA_ENCODING_COLUMN = 3
 
 class Record:
 
-    def __init__(self, rid, key, columns):
+    def __init__(self, rid, Record_key, columns):
         self.rid = rid
-        self.key = key
+        self.Record_key = Record_key
         self.columns = columns
         
     def get_Cur_Rid(self):
@@ -27,14 +27,18 @@ class Table:
     :param num_columns: int     #Number of Columns: all columns are integer
     :param key: int             #Index of table key in columns
     """
-    def __init__(self, name, num_columns, key):
+    def __init__(self, name, num_columns, Table_key):
         self.name = name
-        self.key = key
+        self.Table_key = Table_key
         self.num_columns = num_columns
         self.page_directory = {}  ##'key' == 'index': record
         self.index = Index(self)
         pass
-    def create_page():
+    # RID --- prange | page | offset
+    def create_prange(self, page_key):
+        # page = Page(page_key)
+        #
+
         pass
 
     def create_record(self):
