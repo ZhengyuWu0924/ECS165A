@@ -1,9 +1,10 @@
 from template.page import *
 
 
-page = Page()
+page = Page(1)
 print(page.has_capacity())
-page.writeRecord(99999)
+data = [55,77]
+page.writeRecord(data[0])
 page.writeRecord(1024)
 page.writeRecord(1023)
 
@@ -13,3 +14,7 @@ read2 = page.readRecord(512)
 print(read0)
 print(read1)
 print(read2)
+bpage = Page(1)
+tpage = Page(1)
+prange = [bpage,tpage]
+print(prange[0])

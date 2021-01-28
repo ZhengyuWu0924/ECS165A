@@ -29,7 +29,9 @@ class Query:
     # Returns False if insert fails for whatever reason
     """
     def insert(self, *columns):
+        # *columns = [key, grade, grade, grade, grade]
         schema_encoding = '0' * self.table.num_columns
+        # self.table.put(*columns)
         pass
 
     """

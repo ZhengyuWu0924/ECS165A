@@ -20,6 +20,7 @@ for i in range(0, 1000):
     while key in records:
         key = 92106429 + randint(0, 9000)
     records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
+    # [key, grade, grade, grade, grade]
     query.insert(*records[key])
     print('inserted', records[key])
 

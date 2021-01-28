@@ -1,5 +1,6 @@
 from template.page import *
 from template.index import Index
+from template.config import *
 from time import time
 
 INDIRECTION_COLUMN = 0
@@ -7,14 +8,35 @@ RID_COLUMN = 1
 TIMESTAMP_COLUMN = 2
 SCHEMA_ENCODING_COLUMN = 3
 
+class Prange:
+
+    def __init__(self, b_page, t_page, prange_id):
+        self.b_page = [b_page]
+        self.t_page = [t_page]
+        self.prange_id = prange_id
+        self.page_num = 1
+
+    def append_page(self, page_pos):
+        if page_pos == 0:
+            if self.page_num == MAX_PAGE_NUM:
+                return
+            page = Page(self.page_num)
+            self.b_page.append(page)
+            self.page_num += 1
+        if page_pos == 1:
+            self.t_page.append(page)
+
 
 class Record:
 
-    def __init__(self, rid, Record_key, columns):
+    def __init__(self, rid, indirect, Record_key, columns):
         self.rid = rid
+        self.indirect = indirect
+        self.indirected = None
+        # self.schema = schema
+        # self.timestamp = timestamp
         self.Record_key = Record_key
-        self.columns = columns
-        
+        self.columns = columns #tuple
     """
     Return the current RID
     """
@@ -41,15 +63,24 @@ class Table:
         self.num_columns = num_columns
         self.page_directory = {}  ##'key' == 'index': record
         self.index = Index(self)
+        self.record_directory = {}
+        self.prange_num = 0
+        self.free_rid = 0
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
         # MILESTONE1 never put RID back to pool
         # eazy to use BinarySearch in B-tree
 
         # TODO: remove hard code, and set it in config
-        self.total_RID = 100000000
+        # self.total_RID = 100000000
         pass
 
+    def next_free_rid(self):
+        rid = self.free_rid
+        if rid >=100000000:
+            return -1
+        self.free_rid += 1
+        return rid
 
 
     """
@@ -60,7 +91,7 @@ class Table:
     student name, year, grade. 
 
     """
-    def create_prange(self):
+    def create(self):
         """
         Pseudo Code:
         Each page rage has two kind of pages
@@ -72,24 +103,26 @@ class Table:
             self.page_directory.append('caretogire[i]' : [page[0][0], page[1][0]])
 
         """
-
+        for i in range(self.num_columns):
+            b_page = Page(0)
+            t_page = Page(0)
+            prange = Prange(b_page, t_page, prange_num)
+            self.page_directory.update({i: prange})
         pass
+    
+    def create_record(self, *data):
+        record = Record()
 
-    """
-    This function should be called at the begging of creating the table
-    && the situation that current base page is full and need a new base page 
-    """
-    def create_base_page(self):
-        def
+    def insert_page_to(self, *columns):
+        for i in range(self.num_columns):
+            record = Record(self.next_free_rid, self.next_free_rid, *columns[0] , i)
+            prange = self.page_directory.get(i)
+            if prange.b_page[-1].write() == -1:
+                prange.append_page(0)
+        pass    
 
-    """
-    Create a new tail page and append it to the 
-    previous page.
-    """
-    def create_tail_page(self):
+    def update_page_to(self, *columns):
         pass
-
-
     def create_record(self):
         pass
 
