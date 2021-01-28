@@ -3,7 +3,7 @@ from template.page import *
 
 page = Page()
 print(page.has_capacity())
-page.writeRecord(255)
+page.writeRecord(99999)
 page.writeRecord(1024)
 page.writeRecord(1023)
 
