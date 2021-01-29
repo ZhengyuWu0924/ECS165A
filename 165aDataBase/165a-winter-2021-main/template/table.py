@@ -41,11 +41,13 @@ class Record:
         self.Record_key = Record_key #ex. student_id
         self.columns = columns #tuple of grades
     """
+    :TODO
     Return the current RID
     """
     def get_Cur_Rid(self):
         pass
     """
+    :TODO
     Get Next available RID
     In Milestone1, next available rid should be 
     current + 1
@@ -111,6 +113,7 @@ class Table:
             t_page = Page(0)
             prange = Prange(b_page, t_page, prange_num)
             self.page_directory.update({i: [prange]})
+            # ZYW: add a return statement to return the prange? 
         pass
     
     def insert_record(self, *data):
@@ -153,4 +156,12 @@ class Table:
 
     def __merge(self):
         pass
- 
+    
+    """
+    TODO:
+    Prange functions:
+    create new prange,
+    add the new prange to the current last one
+    should be called for each column
+    """
+
