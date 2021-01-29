@@ -14,15 +14,15 @@ class Prange:
         self.b_page = [b_page]
         self.t_page = [t_page]
         self.prange_id = prange_id
-        self.page_num = 1
+        self.bpage_num = 1
 
     def append_page(self, page_pos):
         if page_pos == 0:
-            if self.page_num == MAX_PAGE_NUM:
-                return
+            if self.bpage_num == MAX_PAGE_NUM:
+                return -1
             page = Page(self.page_num)
             self.b_page.append(page)
-            self.page_num += 1
+            self.bpage_num += 1
         if page_pos == 1:
             self.t_page.append(page)
 
@@ -32,11 +32,14 @@ class Record:
     def __init__(self, rid, indirect, Record_key, columns):
         self.rid = rid
         self.indirect = indirect
-        self.indirected = None
+        # self.indirected = None
         # self.schema = schema
         # self.timestamp = timestamp
-        self.Record_key = Record_key
-        self.columns = columns #tuple
+        self.prange_pos = 0
+        self.page_pos = 0
+        self.offset = 0
+        self.Record_key = Record_key #ex. student_id
+        self.columns = columns #tuple of grades
     """
     Return the current RID
     """
@@ -107,22 +110,44 @@ class Table:
             b_page = Page(0)
             t_page = Page(0)
             prange = Prange(b_page, t_page, prange_num)
-            self.page_directory.update({i: prange})
+            self.page_directory.update({i: [prange]})
         pass
     
-    def create_record(self, *data):
-        record = Record()
-
-    def insert_page_to(self, *columns):
+    def insert_record(self, *data):
+        record = Record(self.next_free_rid, self.next_free_rid, *data[0], *data)
+        self.record_directory.update({record.rid: record, record.Record_key: record})
         for i in range(self.num_columns):
-            record = Record(self.next_free_rid, self.next_free_rid, *columns[0] , i)
-            prange = self.page_directory.get(i)
-            if prange.b_page[-1].write() == -1:
-                prange.append_page(0)
-        pass    
+            if self.page_directory.get(i).b_page[-1].has_capacity() == True:
+                self.page_directory.get(i).b_page[-1].writeRecord(*data[i])
+            else:
+                if self.insert_page_to(i) == -1:
+                    return -1
+                self.page_directory.get(i).b_page[-1].writeRecord(*data[i])
+        return 0
 
-    def update_page_to(self, *columns):
-        pass
+    def update_record(self, *data):
+        std_id = *data[0]
+        base_record = self.record_directory.gwt(std_id)
+        prev_record = self.record_directory.get(base_record.indirect)
+        cur_record = Record(self.next_free_rid, prev_record.indirect, *data[0], *data)
+        base_record.indiret = cur_record.rid
+        self.record_directory.update({cur_record.rid: cur_record})
+        for i in range(self.num_columns):
+            if self.page_directory.get(i).t_page[-1].has_capacity() == True:
+                self.page_directory.get(i).t_page[-1].writeRecord(*data[i])
+            else:
+                update_page_to(i)
+                self.page_directory.get(i).t_page[-1].writeRecord(*data[i])
+        return 0
+
+    def insert_page_to(self, ith_column):
+        prange = self.page_directory.get(ith_column)
+        prange.append_page(0)   
+
+    def update_page_to(self, ith_column):
+        prange = self.page_directory.get(ith_column)
+        prange.append_page(1)
+
     def create_record(self):
         pass
 
