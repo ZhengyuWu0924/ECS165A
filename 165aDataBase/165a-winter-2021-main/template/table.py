@@ -170,15 +170,19 @@ class Table:
         cur_record.indirect = prev_record.rid
         self.record_directory.update({cur_record.rid: cur_record})
         for i in range(self.num_columns):
+            data_ = None
+            if data[i] == None:
+                data_ = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
+                print('176', data_)
             if self.page_directory.get(i)[cur_prange_pos].t_page[-1].has_capacity() == True:
                 prange = self.page_directory.get(i)[cur_prange_pos]
-                cur_record.offset = prange.t_page[-1].writeRecord(data[i])
+                cur_record.offset = prange.t_page[-1].writeRecord(data_)
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos
             else:
                 self.update_page_to(i, cur_prange_pos)
                 prange = self.page_directory.get(i)
-                cur_record.offset = prange.t_page[-1].writeRecord(data[i])
+                cur_record.offset = prange.t_page[-1].writeRecord(data_)
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos
         return 0
@@ -193,6 +197,14 @@ class Table:
     def update_page_to(self, ith_column, ith_prange):
         prange = self.page_directory.get(ith_column)[ith_prange]
         prange.append_page(1)
+
+    def get_data(self, rid, ith_col, prange_pos, page_pos, offset):
+        if rid[0] == 'b':
+            page = self.page_directory.get(ith_col)[prange_pos].b_page[page_pos]
+            return page.readRecord(offset)
+        page = self.page_directory.get(ith_col)[prange_pos].t_page[page_pos]
+        # print(page.readRecord(offset))
+        return page.readRecord(offset)
 
     def read_record(self, std_id):
         record = self.record_directory.get(std_id)

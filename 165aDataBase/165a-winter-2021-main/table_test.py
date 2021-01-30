@@ -13,7 +13,7 @@ test_list = [[9999, 1, 2 ,3, 4],
 
 update_data = [9999, 4, 3, 2, 1]
 update_data2 = [9999, 4, 2, 2, 1]
-update_data3 = [9999, 4, 2, 2, 2]
+update_data3 = [9999, 4, 2, None, 2]
 # for i in range(0, 1000):
 #     key = 92106429 + randint(0, 9000)
 #     while key in records:
@@ -33,6 +33,6 @@ for i in test_list:
 table.update_record(*update_data)
 table.update_record(*update_data2)
 table.update_record(*update_data3)
-data = table.read_record(9999)
+# data = table.read_record(9999)
 
-print(data)
+# print(data)
