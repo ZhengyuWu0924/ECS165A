@@ -74,6 +74,7 @@ class Table:
         self.prange_num = 0
         self.free_brid = 0
         self.free_trid = 0
+        self.rid_list = []
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
         # MILESTONE1 never put RID back to pool
@@ -89,7 +90,7 @@ class Table:
             rid = 'b' + str(self.free_brid)
             # if rid >=100000000:
             #     return -1   
-            self.free_brid += 1 
+            self.free_brid = self.free_brid + 1
         if page_pos == 1: 
             rid = 't' + str(self.free_trid)
             self.free_trid += 1
@@ -136,58 +137,82 @@ class Table:
             self.prange_num += 1
             self.free_brid = 0
             self.free_trid = 0
-        record = Record(self.next_free_rid, self.next_free_rid, *data[0], *data)
+        rid = self.next_free_rid(0)
+        record = Record(rid, rid, data[0], data)
         self.record_directory.update({record.rid: record, record.Record_key: record})
+        self.rid_list.append(record.rid)
         record.indirect = record.rid
         for i in range(self.num_columns):
             if self.page_directory.get(i)[-1].b_page[-1].has_capacity() == True:
                 prange = self.page_directory.get(i)[-1]
-                record.offset = prange.b_page[-1].writeRecord(*data[i])
+                record.offset = prange.b_page[-1].writeRecord(data[i])
                 record.page_pos = len(prange.b_page) - 1
                 record.prange_pos = self.prange_num
             else:
                 if self.insert_page_to(i) == -1:
                     self.add_prange(i)
                 prange = self.page_directory.get(i)[-1]
-                record.offset = prange.b_page[-1].writeRecord(*data[i])
+                record.offset = prange.b_page[-1].writeRecord(data[i])
                 record.page_pos = len(prange.b_page) - 1
                 record.prange_pos = self.prange_num
         return 0
 
     def update_record(self, *data):
         std_id = data[0]
+        rid = self.next_free_rid(1)
+        # print(rid)
         base_record = self.record_directory.get(std_id)
         # get current prange position
         cur_prange_pos = base_record.prange_pos
         prev_record = self.record_directory.get(base_record.indirect)
-        cur_record = Record(self.next_free_rid, prev_record.indirect, *data[0], *data)
+        cur_record = Record(rid, prev_record.indirect, data[0], data)
         base_record.indirect = cur_record.rid
         cur_record.indirect = prev_record.rid
         self.record_directory.update({cur_record.rid: cur_record})
         for i in range(self.num_columns):
             if self.page_directory.get(i)[cur_prange_pos].t_page[-1].has_capacity() == True:
                 prange = self.page_directory.get(i)[cur_prange_pos]
-                cur_record.offset = prange.t_page[-1].writeRecord(*data[i])
+                cur_record.offset = prange.t_page[-1].writeRecord(data[i])
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos
             else:
-                self.update_page_to(i)
+                self.update_page_to(i, cur_prange_pos)
                 prange = self.page_directory.get(i)
-                cur_record.offset = prange.t_page[-1].writeRecord(*data[i])
+                cur_record.offset = prange.t_page[-1].writeRecord(data[i])
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos
         return 0
 
     def insert_page_to(self, ith_column):
-        prange = self.page_directory.get(ith_column)
+        prange = self.page_directory.get(ith_column)[-1]
         prange.append_page(0)   
 
-    def update_page_to(self, ith_column):
-        prange = self.page_directory.get(ith_column)
+    def get_rid_list(self):
+        return self.rid_list
+
+    def update_page_to(self, ith_column, ith_prange):
+        prange = self.page_directory.get(ith_column)[ith_prange]
         prange.append_page(1)
 
-    def read_record(self):
-        pass
+    def read_record(self, std_id):
+        record = self.record_directory.get(std_id)
+        rid = record.indirect
+        # print(rid)
+        record = self.record_directory.get(rid)
+        offset = record.offset
+        page_pos = record.page_pos
+        prange_pos = record.prange_pos
+        res = []
+        for i in range(self.num_columns):
+            if rid[0] == 'b':
+                page = self.page_directory.get(i)[prange_pos].b_page[page_pos]
+                data = page.readRecord(offset)
+                res.append(data)
+            else:
+                page = self.page_directory.get(i)[prange_pos].t_page[page_pos]
+                data = page.readRecord(offset)
+                res.append(data)
+        return res
 
     def __merge(self):
         pass

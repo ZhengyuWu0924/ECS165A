@@ -20,7 +20,7 @@ class Page:
     
     def writeRecord(self, value):
         cap = self.has_capacity()
-        offset = num_records
+        offset = self.num_records
         if cap == True:
             start = self.num_records * RECORD_SIZE
             end = start + RECORD_SIZE
