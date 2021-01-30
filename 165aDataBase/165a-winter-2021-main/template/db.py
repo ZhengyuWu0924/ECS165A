@@ -38,17 +38,16 @@ class Database():
     :param num_columns: int     #Number of Columns: all columns are integer
     :param key: int             #Index of table key in columns
     :return the table just created
-    * In MS1, we assume mutiple tables with the same properties are 
+    * In MS1, we assume mutiple tables with the same name are 
     not allowed in the database
     """
     def create_table(self, name, num_columns, key):
         
         for table in self.tables_directory:
             if name in table.name:
-                if num_columns in table.num_columns:
-                    if key in table.key:
-
-                        return table
+                print("Already exists such a table")
+                print("Returning this table")
+                return table
         
         new_table = Table(name, num_columns, key)
         new_table.create()
