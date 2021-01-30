@@ -1,14 +1,19 @@
 """
-A data strucutre holding indices for various columns of a table. Key column should be indexd by default, other columns can be indexed through this object. Indices are usually B-Trees, but other data structures can be used as well.
+A data strucutre holding indices for various columns of a table.
+Key column should be indexd by default, other columns can be indexed through this object.
+Indices are usually B-Trees, but other data structures can be used as well.
 """
 from BTrees.OOBTree import OOBTree
+from template.config import *
 
 class Index:
     
     def __init__(self, table):
         # One index for each table. All our empty initially.
-        self.indices = [None] *  table.num_columns
-        self.col_tree_list = {}
+        self.indices = [None] *  table.num_columns #Btree
+        self.count_rid = [0] * table.num_columns # number of rid in each column
+        self.col_tree_dic = {}
+        self.create_index(table.Table_key)
         pass
 
     """
@@ -16,24 +21,57 @@ class Index:
     """
 
     def locate(self, column, value):
-        
-        pass
+
+        try:
+            return self.indices[column][value]
+        except:
+            return "KeyError"
 
     """
     # Returns the RIDs of all records with values in column "column" between "begin" and "end"
+    # usage: list(t.values(min=1, max=4, excludemin=True, excludemax=True))
     """
 
     def locate_range(self, begin, end, column):
-        pass
+        return list(self.indices[column].values(begin, end, excludemax=True)) # return a list of lists
+
 
     """
     # optional: Create index on specific column
     """
 
     def create_index(self, column_number):
-        if column_number in self.col_tree_list:
-           return 
-        tree_storage = OOBTree()
+            self.indices[column_number] = OOBTree()
+
+    """
+    # insert a new record
+    """
+
+    def insert(self, column, value, rid):
+
+        if self.indices[column] is not None:
+            self.count_rid[column] += 1
+            if self.indices[column].has_key(value):
+                self.indices[column][value].append(rid)
+            else:
+                self.indices[column][value] = [rid]
+        else:
+            self.create_index(self,column)
+            self.count_rid[column] = 1
+            self.indices[column][value] = [rid]
+
+        pass
+
+    def delete(self, column, value, rid):
+        self.indices[column][value].remove(rid)
+        if self.indices[column][value] == []:
+            self.indices[column].__delitem__(value)
+
+        pass
+
+    def update(self, column, old_value, new_value, rid):
+        self.delete(column, old_value, rid)
+        self.insert(column, new_value, rid)
         pass
 
     """
