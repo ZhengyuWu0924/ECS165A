@@ -26,6 +26,8 @@ class Database():
     """
     Append a table to database
     :param: table               #A table that going to be appended 
+    Private function
+    only be called in this class
     """
     def append_table(self, table):
         self.tables_directory.append(table)
@@ -36,15 +38,23 @@ class Database():
     :param num_columns: int     #Number of Columns: all columns are integer
     :param key: int             #Index of table key in columns
     :return the table just created
-    * In MS1, we assume mutiple tables with the same properties are allowed 
-    in the database
+    * In MS1, we assume mutiple tables with the same properties are 
+    not allowed in the database
     """
     def create_table(self, name, num_columns, key):
-        table = Table(name, num_columns, key)
-        table.create()
-        self.append_table(table)
+        
+        for table in self.tables_directory:
+            if name in table.name:
+                if num_columns in table.num_columns:
+                    if key in table.key:
+
+                        return table
+        
+        new_table = Table(name, num_columns, key)
+        new_table.create()
+        self.append_table(new_table)
         self.num_table += 1
-        return table
+        return new_table
 
     """
     # Deletes the specified table

@@ -22,3 +22,7 @@ print("Table record directory:",sec_grades_table.record_directory)
 print("Table prange:",sec_grades_table.prange_num)
 print("Table free base rid:",sec_grades_table.free_brid)
 print("Table free tail rid:",sec_grades_table.free_trid)
+
+print("Before calling drop", len(database.tables_directory))
+database.drop_table('Grades')
+print("After calling drop", len(database.tables_directory))
