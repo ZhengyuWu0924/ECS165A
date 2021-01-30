@@ -21,7 +21,7 @@ class Prange:
         if page_pos == 0:
             if self.bpage_num == MAX_PAGE_NUM:
                 return -1
-            page = Page(self.page_num)
+            page = Page(page_pos) # modified 1935
             self.b_page.append(page)
             self.bpage_num += 1
         if page_pos == 1:
@@ -119,7 +119,7 @@ class Table:
         for i in range(self.num_columns):
             b_page = Page(0)
             t_page = Page(0)
-            prange = Prange(b_page, t_page, prange_num)
+            prange = Prange(b_page, t_page, self.prange_num)
             self.page_directory.update({i: [prange]})
             # ZYW: add a return statement to return the prange? 
         pass
@@ -135,7 +135,7 @@ class Table:
         if self.page_directory.get(0)[-1].bpage_num == MAX_PAGE_NUM:
             self.prange_num += 1
             self.free_brid = 0
-            self.free.trid = 0
+            self.free_trid = 0
         record = Record(self.next_free_rid, self.next_free_rid, *data[0], *data)
         self.record_directory.update({record.rid: record, record.Record_key: record})
         record.indirect = record.rid
@@ -155,7 +155,7 @@ class Table:
         return 0
 
     def update_record(self, *data):
-        std_id = *data[0]
+        std_id = data[0]
         base_record = self.record_directory.get(std_id)
         # get current prange position
         cur_prange_pos = base_record.prange_pos
@@ -169,13 +169,13 @@ class Table:
                 prange = self.page_directory.get(i)[cur_prange_pos]
                 cur_record.offset = prange.t_page[-1].writeRecord(*data[i])
                 cur_record.page_pos = len(prange.t_page) - 1
-                record.prange_pos = cur_prange_pos
+                cur_record.prange_pos = cur_prange_pos
             else:
-                update_page_to(i)
+                self.update_page_to(i)
                 prange = self.page_directory.get(i)
                 cur_record.offset = prange.t_page[-1].writeRecord(*data[i])
                 cur_record.page_pos = len(prange.t_page) - 1
-                record.prange_pos = cur_prange_pos
+                cur_record.prange_pos = cur_prange_pos
         return 0
 
     def insert_page_to(self, ith_column):
