@@ -171,8 +171,12 @@ class Table:
         self.record_directory.update({cur_record.rid: cur_record})
         for i in range(self.num_columns):
             data_ = data[i]
+            # handle the case when the data is empty, we will emerge data
+            # from previous record
             if data[i] == None:
                 data_ = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
+                # handle the case when the data is always empty, we use '/' to
+                # represent the final value
                 if data_ == '/':
                     data_ = None
                 # print('176',prev_record.rid, prev_record.prange_pos, prev_record.page_pos, data_)
