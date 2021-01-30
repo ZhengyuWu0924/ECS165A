@@ -7,12 +7,12 @@ print(table)
 table.create()
 records = {}
 
-test_list = [[9999, 1, 2 ,3, 4],
+test_list = [[9999, 1, 2 ,None, 4],
             [9998, 1, 2, 4, 3],
             ]
 
-update_data = [9999, 4, 3, 2, 1]
-update_data2 = [9999, 4, 2, 2, 1]
+update_data = [9999, 4, 3, None, 1]
+update_data2 = [9999, 4, 2, None, 1]
 update_data3 = [9999, 4, 2, None, 2]
 # for i in range(0, 1000):
 #     key = 92106429 + randint(0, 9000)
