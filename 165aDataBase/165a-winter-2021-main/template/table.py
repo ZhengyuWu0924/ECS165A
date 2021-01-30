@@ -170,10 +170,10 @@ class Table:
         cur_record.indirect = prev_record.rid
         self.record_directory.update({cur_record.rid: cur_record})
         for i in range(self.num_columns):
-            data_ = None
+            data_ = data[i]
             if data[i] == None:
                 data_ = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
-                print('176', data_)
+                # print('176',prev_record.rid, prev_record.prange_pos, prev_record.page_pos, data_)
             if self.page_directory.get(i)[cur_prange_pos].t_page[-1].has_capacity() == True:
                 prange = self.page_directory.get(i)[cur_prange_pos]
                 cur_record.offset = prange.t_page[-1].writeRecord(data_)

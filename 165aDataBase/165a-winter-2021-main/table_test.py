@@ -33,6 +33,6 @@ for i in test_list:
 table.update_record(*update_data)
 table.update_record(*update_data2)
 table.update_record(*update_data3)
-# data = table.read_record(9999)
+data = table.read_record(9999)
 
-# print(data)
+print(data)
