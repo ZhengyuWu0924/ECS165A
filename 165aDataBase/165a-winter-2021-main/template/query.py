@@ -30,8 +30,11 @@ class Query:
     """
     def insert(self, *columns):
         # *columns = [key, grade, grade, grade, grade]
+        # The​ insert function will insert a new record in the table
         schema_encoding = '0' * self.table.num_columns
-        # self.table.put(*columns)
+        # Should schema encoding insert into the columns?
+        # self.table.append(*columns)
+
         pass
 
     """
@@ -50,8 +53,20 @@ class Query:
     # Returns True if update is succesful
     # Returns False if no records exist with given key or if the target record cannot be accessed due to 2PL locking
     """
+     # Ex:query.update(choice(keys), *(choice(update_cols)))
     def update(self, key, *columns):
-        pass
+      # Record_key or table_key ?
+        for key in self.tables_key:
+            if key in Record_key:
+
+                Record_key.append(key)
+                columns.append(*columns)
+                return True
+
+            else:
+                return False
+       
+        #pass
 
     """
     :param start_range: int         # Start of the key range to aggregate 
@@ -62,7 +77,17 @@ class Query:
     # Returns False if no record exists in the given range
     """
     def sum(self, start_range, end_range, aggregate_column_index):
-        pass
+        # Ex: query.sum(i, 100, randrange(0, 5))
+        # Summation of
+        # 
+       for record in range(start_range,end_range):
+            if record in Record:
+
+
+                return True
+
+            else:
+                return False
 
     """
     incremenets one column of the record
