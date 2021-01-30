@@ -6,9 +6,20 @@ class Database():
         self.tables = []
         pass
 
+    """
+    Not for MS1
+    Implement this in future
+    SSD or HDD related
+    Open a table from Secondary memory
+    """
     def open(self, path):
         pass
-
+    """
+    Not for MS1
+    Implement this in future 
+    SSD or HDD related
+    Close a table
+    """
     def close(self):
         pass
 
@@ -25,6 +36,7 @@ class Database():
 
     """
     # Deletes the specified table
+    IF we should also free the memory when dropping?
     """
     def drop_table(self, name):
         pass
