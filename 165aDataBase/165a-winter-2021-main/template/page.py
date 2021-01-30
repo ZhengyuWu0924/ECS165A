@@ -20,6 +20,7 @@ class Page:
     
     def writeRecord(self, value):
         cap = self.has_capacity()
+        offset = num_records
         if cap == True:
             start = self.num_records * RECORD_SIZE
             end = start + RECORD_SIZE
@@ -29,6 +30,7 @@ class Page:
                 self.takenArr.append(False)
                 self.data[start:end] = value.to_bytes(RECORD_SIZE,byteorder='big')
             self.num_records += 1
+            return offset
         else:
             print('Page writing failed')
             return -1
