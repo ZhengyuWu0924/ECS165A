@@ -155,13 +155,16 @@ class Table:
                 record.offset = prange.b_page[-1].writeRecord(data[i])
                 record.page_pos = len(prange.b_page) - 1
                 record.prange_pos = self.prange_num
-        return 0
+        return True
 
+    # if key does not exist then return false
     def update_record(self, *data):
         std_id = data[0]
         rid = self.next_free_rid(1)
         # print(rid)
         base_record = self.record_directory.get(std_id)
+        if base_record == None:
+            return False
         # get current prange position
         cur_prange_pos = base_record.prange_pos
         prev_record = self.record_directory.get(base_record.indirect)

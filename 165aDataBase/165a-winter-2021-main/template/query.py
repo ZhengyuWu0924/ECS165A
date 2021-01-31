@@ -29,6 +29,11 @@ class Query:
     # Returns False if insert fails for whatever reason
     """
     def insert(self, *columns):
+        if columns == None:
+            return False
+        if self.table.insert_record(*columns) != False:
+            return True
+        return False
         # *columns = [key, grade, grade, grade, grade]
         # The​ insert function will insert a new record in the table
         schema_encoding = '0' * self.table.num_columns
@@ -56,14 +61,11 @@ class Query:
      # Ex:query.update(choice(keys), *(choice(update_cols)))
     def update(self, key, *columns):
       # Record_key or table_key ?
-        for key in self.tables_key:
-            if key in Record_key:
-
-                Record_key.append(key)
-                columns.append(*columns)
+        # print(columns[0])
+        if self.table.update_record(*columns) != False:
                 return True
 
-            else:
+        else:
                 return False
        
         #pass
