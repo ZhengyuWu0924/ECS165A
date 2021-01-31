@@ -59,7 +59,7 @@ class Index:
         else:
             # print('second')
             print(column)
-            self.create_index(self,column)
+            self.create_index(column)
             self.count_rid[column] = 1
             self.indices[column][value] = [rid]
 

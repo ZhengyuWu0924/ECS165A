@@ -63,10 +63,10 @@ class Query:
       # Record_key or table_key ?
         # print(columns[0])
         if self.table.update_record(*columns) != False:
-                return True
+            return True
 
         else:
-                return False
+            return False
        
         #pass
 

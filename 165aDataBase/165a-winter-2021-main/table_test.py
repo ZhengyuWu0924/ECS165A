@@ -9,12 +9,12 @@ table.create()
 query = Query(table)
 records = {}
 
-test_list = [[9999, 1, 2 ,None, 4],
+test_list = [[9999, None, 2 ,4, 4],
             [9998, 1, 2, 4, 3],
             ]
 
-update_data = [9999, 4, 3, None, 1]
-update_data2 = [9999, 4, 2, None, 1]
+update_data = [9999, 4, 3, 5, 1]
+update_data2 = [9999, 4, 2, 4, 1]
 update_data3 = [9990, 4, 2, None, 2]
 update_data4 = [9999, None, None, 2, None]
 
@@ -29,7 +29,6 @@ update_data4 = [9999, None, None, 2, None]
 #     # print(data)
 
 for i in test_list:
-    # print(i)
     query.insert(*i)
     # table.update_record(*update_data)
     # data = table.read_record(9998)
