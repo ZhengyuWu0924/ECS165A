@@ -50,12 +50,15 @@ class Index:
     def insert(self, column, value, rid):
 
         if self.indices[column] is not None:
+            # print('first')
             self.count_rid[column] += 1
             if self.indices[column].has_key(value):
                 self.indices[column][value].append(rid)
             else:
                 self.indices[column][value] = [rid]
         else:
+            # print('second')
+            print(column)
             self.create_index(self,column)
             self.count_rid[column] = 1
             self.indices[column][value] = [rid]

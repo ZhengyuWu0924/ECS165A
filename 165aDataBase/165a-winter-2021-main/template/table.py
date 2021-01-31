@@ -105,6 +105,7 @@ class Table:
     student name, year, grade. 
 
     """
+    # To Do: build index during looping
     def create(self):
         """
         Pseudo Code:
@@ -121,6 +122,8 @@ class Table:
             b_page = Page(0)
             t_page = Page(0)
             prange = Prange(b_page, t_page, self.prange_num)
+            # tree = Index(self)
+            # self.index.append(tree)
             self.page_directory.update({i: [prange]})
             # ZYW: add a return statement to return the prange? 
         pass
@@ -131,6 +134,7 @@ class Table:
         prange = Prange(b_page, t_page, self.prange_num)
         self.page_directory.get(column).append(prange)
 
+    # To Do: inset record to index
     def insert_record(self, *data):
         #check if latest prange is full 
         if self.page_directory.get(0)[-1].bpage_num == MAX_PAGE_NUM:
@@ -143,6 +147,10 @@ class Table:
         self.rid_list.append(record.rid)
         record.indirect = record.rid
         for i in range(self.num_columns):
+            print(i)
+            print(data[i])
+            print(record.rid)
+            self.index.insert(i, data[i], record.rid)
             if self.page_directory.get(i)[-1].b_page[-1].has_capacity() == True:
                 prange = self.page_directory.get(i)[-1]
                 record.offset = prange.b_page[-1].writeRecord(data[i])
@@ -158,6 +166,7 @@ class Table:
         return True
 
     # if key does not exist then return false
+    # To Do: update record to index
     def update_record(self, *data):
         std_id = data[0]
         rid = self.next_free_rid(1)
@@ -173,11 +182,13 @@ class Table:
         cur_record.indirect = prev_record.rid
         self.record_directory.update({cur_record.rid: cur_record})
         for i in range(self.num_columns):
+            prev_data = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
+            self.index.update(i, prev_data, data[i], cur_record.rid)
             data_ = data[i]
             # handle the case when the data is empty, we will emerge data
             # from previous record
             if data[i] == None:
-                data_ = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
+                data_ = prev_data
                 # handle the case when the data is always empty, we use '/' to
                 # represent the final value
                 if data_ == '/':
@@ -239,7 +250,7 @@ class Table:
         pass
     
     """
-    TODO:
+    TODO(completed):
     Prange functions:
     create new prange,
     add the new prange to the current last one
