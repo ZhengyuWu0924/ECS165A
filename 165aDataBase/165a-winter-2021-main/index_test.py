@@ -14,17 +14,18 @@ I = Index(table)
 print(I)
 
 I.insert(1, 0, 'g')
-I.insert(0, 87, 2)
+I.insert(0, 1, 2, Is_None = True)
+I.update(0,None,87,2)
 I.insert(0, 50, 3)
 I.insert(0, 100, 4)
 I.insert(0, 82, 5)
 I.insert(1, 82, 55)
 #I.delete(0, 87 ,2)
-I.update(1, 87, 82, 'g')
+I.update(1, 0, 82, 'g')
 I.update(1, 82, None, 'g')
 print(I.locate(0,87))
-print(I.locate(0,82))
-print(I.locate_range(60, 90, 0))
+#print(I.locate(0,82))
+#print(I.locate_range(60, 90, 0))
 
 
 
