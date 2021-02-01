@@ -216,7 +216,7 @@ class Table:
                     self.index.update(i, 0, 0, base_record.rid)
                 else:
                     self.index.update(i, 0, data[i], base_record.rid)
-            print('prev_data', prev_data)
+            # print('prev_data', prev_data)
             # self.index.update(i, prev_data, data[i], base_record.rid)
             data_ = data[i]
             # handle the case when the data is empty, we will emerge data

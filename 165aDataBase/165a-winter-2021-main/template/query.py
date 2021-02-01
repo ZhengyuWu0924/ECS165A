@@ -51,7 +51,47 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select(self, key, column, query_columns):
-        pass
+        recordArr = []
+        if key in self.table.record_directory:
+            bTreeRIDs = self.table.index.locate(column, key)
+            
+            for baseRid in bTreeRIDs:
+                ridRecord = self.table.record_directory.get(baseRid)
+                if ridRecord.indirect == baseRid:
+                    tempRecord = []
+                    for index in range(len(query_columns)):
+                        if query_columns[index] == 1:
+                            tempRecord.insert(len(tempRecord), ridRecord.columns[index])
+                    recordArr.insert(len(recordArr), tempRecord)
+                    
+                    return recordArr
+                circleFlag = ridRecord.indirect
+                
+                prevRecord = self.table.record_directory.get(ridRecord.indirect)
+                
+                prevIndirect = prevRecord.indirect
+                while prevIndirect != circleFlag:
+                    currentRecord = prevRecord
+                    prevRecord = self.table.record_directory.get(currentRecord.indirect)
+                    currentColumns = []
+                    for index in range(len(query_columns)):
+                        if query_columns[index] == 1:
+                            currentColumns.insert(len(currentColumns),
+                            currentRecord.columns[index])
+                    recordArr.insert(0, currentColumns)
+                    prevIndirect = prevRecord.indirect
+                base_record = []
+                for index in range(len(query_columns)):
+                    
+                    if query_columns[index] == 1:
+                        base_record.insert(len(base_record),
+                                        ridRecord.columns[index])
+                    
+                recordArr.insert(0, base_record)
+                
+                return recordArr
+        return False
+        
 
     """
     # Update a record with specified key and columns
