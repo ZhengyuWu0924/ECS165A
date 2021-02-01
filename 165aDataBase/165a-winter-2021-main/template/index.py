@@ -47,8 +47,8 @@ class Index:
     # insert a new record
     """
 
-    def insert(self, column, value, rid, Is_None = False):
-        if Is_None:
+    def insert(self, column, value, rid):
+        if value is None:
             value = -MAX_LONGINT
         if self.indices[column] is not None:
             # print('first')
@@ -76,6 +76,8 @@ class Index:
     def update(self, column, old_value, new_value, rid):
         if old_value is None:
             old_value = -MAX_LONGINT
+        if new_value is None:
+            new_value = -MAX_LONGINT
         self.delete(column, old_value, rid)
         self.insert(column, new_value, rid)
         pass
