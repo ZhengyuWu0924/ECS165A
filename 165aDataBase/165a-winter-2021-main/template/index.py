@@ -47,8 +47,9 @@ class Index:
     # insert a new record
     """
 
-    def insert(self, column, value, rid):
-
+    def insert(self, column, value, rid, Is_None = False):
+        if Is_None:
+            value = -MAX_LONGINT
         if self.indices[column] is not None:
             # print('first')
             self.count_rid[column] += 1
@@ -58,7 +59,7 @@ class Index:
                 self.indices[column][value] = [rid]
         else:
             # print('second')
-            print(column)
+            #print(column)
             self.create_index(column)
             self.count_rid[column] = 1
             self.indices[column][value] = [rid]
@@ -73,6 +74,8 @@ class Index:
         pass
 
     def update(self, column, old_value, new_value, rid):
+        if old_value is None:
+            old_value = -MAX_LONGINT
         self.delete(column, old_value, rid)
         self.insert(column, new_value, rid)
         pass
