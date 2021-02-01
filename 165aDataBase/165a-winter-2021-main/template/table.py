@@ -187,10 +187,7 @@ class Table:
                 record.offset = prange.b_page[-1].writeRecord(data[i])
                 record.page_pos = len(prange.b_page) - 1
                 record.prange_pos = self.prange_num
-            if data[i] == None:
-                self.index.insert(i, 0, record.rid)
-            else:
-                self.index.insert(i, data[i], record.rid)
+            self.index.insert(i, data[i], record.rid)
         return True
 
     # if key does not exist then return false
@@ -212,10 +209,7 @@ class Table:
         for i in range(self.num_columns):
             prev_data = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
             if prev_data == '/':
-                if data[i] == None:
-                    self.index.update(i, 0, 0, base_record.rid)
-                else:
-                    self.index.update(i, 0, data[i], base_record.rid)
+                self.index.update(i, None, data[i], base_record.rid)
             # print('prev_data', prev_data)
             # self.index.update(i, prev_data, data[i], base_record.rid)
             data_ = data[i]
