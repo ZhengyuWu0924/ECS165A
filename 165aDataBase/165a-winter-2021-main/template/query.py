@@ -53,24 +53,30 @@ class Query:
     def select(self, key, column, query_columns):
         recordArr = []
         if key in self.table.record_directory:
+            # get the base rid from table by bTree
             bTreeRIDs = self.table.index.locate(column, key)
             
             for baseRid in bTreeRIDs:
+                # base record, used later
                 ridRecord = self.table.record_directory.get(baseRid)
+                # if only one base record
                 if ridRecord.indirect == baseRid:
                     tempRecord = []
                     for index in range(len(query_columns)):
                         if query_columns[index] == 1:
                             tempRecord.insert(len(tempRecord), ridRecord.columns[index])
                     recordArr.insert(len(recordArr), tempRecord)
-                    
+                    # return the target columns
                     return recordArr
+                # set a flag to indicate circle linkedlist
                 circleFlag = ridRecord.indirect
-                
+                # base record will indirect to the newest tail
+                # travel reverse to form the logbook 
                 prevRecord = self.table.record_directory.get(ridRecord.indirect)
-                
                 prevIndirect = prevRecord.indirect
+                # whlie there is not a circle
                 while prevIndirect != circleFlag:
+                    # add reacord to the front of the log book
                     currentRecord = prevRecord
                     prevRecord = self.table.record_directory.get(currentRecord.indirect)
                     currentColumns = []
@@ -80,16 +86,17 @@ class Query:
                             currentRecord.columns[index])
                     recordArr.insert(0, currentColumns)
                     prevIndirect = prevRecord.indirect
+                # circle found
+                # add base record to the front
                 base_record = []
                 for index in range(len(query_columns)):
-                    
                     if query_columns[index] == 1:
                         base_record.insert(len(base_record),
                                         ridRecord.columns[index])
-                    
                 recordArr.insert(0, base_record)
-                
+                # return list of records
                 return recordArr
+        # if something wrong, return false
         return False
         
 
