@@ -24,6 +24,7 @@ class Prange:
             page = Page(page_pos) # modified 1935
             self.b_page.append(page)
             self.bpage_num += 1
+            # print('27',self.bpage_num)
         if page_pos == 1:
             self.t_page.append(page)
             self.tpage_num += 1
@@ -134,24 +135,39 @@ class Table:
         prange = Prange(b_page, t_page, self.prange_num)
         self.page_directory.get(column).append(prange)
 
+    def create_record(self, rid, indirect, value, data, first):
+        record = Record(rid, indirect, value, data)
+        if first == True:
+            self.record_directory.update({rid: record, value: record})
+            self.rid_list.append(rid)
+        return record
+
     # To Do: inset record to index
     def insert_record(self, *data):
-        #check if latest prange is full 
-        if self.page_directory.get(0)[-1].bpage_num == MAX_PAGE_NUM:
-            self.prange_num += 1
-            self.free_brid = 0
-            self.free_trid = 0
-        rid = self.next_free_rid(0)
-        record = Record(rid, rid, data[0], data)
-        self.record_directory.update({record.rid: record, record.Record_key: record})
-        self.rid_list.append(record.rid)
-        record.indirect = record.rid
+        #check if latest prange is full
+        record = None 
+        first = None
+        rid = None
+        # if self.page_directory.get(0)[-1].bpage_num == MAX_PAGE_NUM:
+        #     print('reaching max')
+        #     self.prange_num += 1
+        #     self.free_brid = 0
+        #     self.free_trid = 0
+        # rid = self.next_free_rid(0)
+        # record = Record(rid, rid, data[0], data)
+        # self.record_directory.update({record.rid: record, record.Record_key: record})
+        # self.rid_list.append(record.rid)
+        # record.indirect = record.rid
         for i in range(self.num_columns):
-            if data[i] == None:
-                self.index.insert(i, 0, record.rid)
+            if i == 0:
+                first = True
             else:
-                self.index.insert(i, data[i], record.rid)
+                first = False
+
             if self.page_directory.get(i)[-1].b_page[-1].has_capacity() == True:
+                if first == True:
+                    rid = self.next_free_rid(0)
+                record = self.create_record(rid, rid, data[i], data, first)
                 prange = self.page_directory.get(i)[-1]
                 record.offset = prange.b_page[-1].writeRecord(data[i])
                 record.page_pos = len(prange.b_page) - 1
@@ -159,10 +175,22 @@ class Table:
             else:
                 if self.insert_page_to(i) == -1:
                     self.add_prange(i)
+                    if first == True:
+                        print('adding prange')
+                        self.prange_num += 1
+                        rid = self.next_free_rid(0)
+                    # self.free_brid = 0
+                    self.free_trid = 0
+                    
+                record = self.create_record(rid, rid, data[i], data, first)
                 prange = self.page_directory.get(i)[-1]
                 record.offset = prange.b_page[-1].writeRecord(data[i])
                 record.page_pos = len(prange.b_page) - 1
                 record.prange_pos = self.prange_num
+            if data[i] == None:
+                self.index.insert(i, 0, record.rid)
+            else:
+                self.index.insert(i, data[i], record.rid)
         return True
 
     # if key does not exist then return false
@@ -184,8 +212,12 @@ class Table:
         for i in range(self.num_columns):
             prev_data = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
             if prev_data == '/':
-                prev_data = 0
-            self.index.update(i, prev_data, data[i], base_record.rid)
+                if data[i] == None:
+                    self.index.update(i, 0, 0, base_record.rid)
+                else:
+                    self.index.update(i, 0, data[i], base_record.rid)
+            print('prev_data', prev_data)
+            # self.index.update(i, prev_data, data[i], base_record.rid)
             data_ = data[i]
             # handle the case when the data is empty, we will emerge data
             # from previous record
@@ -211,7 +243,8 @@ class Table:
 
     def insert_page_to(self, ith_column):
         prange = self.page_directory.get(ith_column)[-1]
-        prange.append_page(0)   
+        if prange.append_page(0) == -1:
+            return -1  
 
     def get_rid_list(self):
         return self.rid_list
@@ -251,11 +284,4 @@ class Table:
     def __merge(self):
         pass
     
-    """
-    TODO(completed):
-    Prange functions:
-    create new prange,
-    add the new prange to the current last one
-    should be called for each column
-    """
 

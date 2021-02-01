@@ -30,6 +30,7 @@ class Page:
                 self.takenArr.append(False)
                 self.data[start:end] = value.to_bytes(RECORD_SIZE,byteorder='big')
             self.num_records += 1
+            # print(cap)
             return offset
         else:
             print('Page writing failed')
