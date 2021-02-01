@@ -21,31 +21,32 @@ update_data2 = [9999, 4, 2, None, 1]
 update_data3 = [9990, 4, 2, None, 2]
 update_data4 = [9999, None, None, None, None]
 
-query.update(9999, *update_data4)
-for i in range(0, 30000):
-    key = 92106429 + randint(0, 100000)
-    while key in records:
-        key = 92106429 + randint(0, 9000)
-    records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
-    query2.insert(*records[key])
-    if i == 25000:
-        data = table2.read_record(key)
-print(data)
-print(table2.prange_num)
-# print(table2.rid_list)
-print(len(table2.page_directory.get(0)))
+# query.update(9999, *update_data4)
+# for i in range(0, 30000):
+#     key = 92106429 + randint(0, 100000)
+#     while key in records:
+#         key = 92106429 + randint(0, 9000)
+#     records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
+#     query2.insert(*records[key])
+#     if i == 25000:
+#         data = table2.read_record(key)
+# print(data)
+# print(table2.prange_num)
+# # print(table2.rid_list)
+# print(len(table2.page_directory.get(0)))
 
-# for i in test_list:
-#     query.insert(*i)
-# #     # table.update_record(*update_data)
-# #     data = table.read_record(9999)
-# #     print(table.get_rid_list())
-# # data = table.read_record(9999)
-# # table.update_record(*update_data3)
-# query.update(9999, *update_data) #[9999, 4, 3, None, 1]
-# query.update(9999, *update_data2) #[9999, 4, 2, 4, 1]
-# query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
-# query.update(9999, *update_data4) #[9999, None, None, 2, None]
+for i in test_list:
+    query.insert(*i)
+#     # table.update_record(*update_data)
+#     data = table.read_record(9999)
+#     print(table.get_rid_list())
+# data = table.read_record(9999)
+# table.update_record(*update_data3)
+query.update(9999, *update_data) #[9999, 4, 3, None, 1]
+query.update(9999, *update_data2) #[9999, 4, 2, 4, 1]
+query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
+query.update(9999, *update_data4) #[9999, None, None, 2, None]
+value = query.sum(5000, 10000, 0)
 # data = table.read_record(9999)
 
-# print(data)
+print(value)

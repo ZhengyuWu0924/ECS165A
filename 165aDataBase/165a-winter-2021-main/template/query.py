@@ -40,7 +40,6 @@ class Query:
         # Should schema encoding insert into the columns?
         # self.table.append(*columns)
 
-        pass
 
     """
     # Read a record with specified key
@@ -129,14 +128,16 @@ class Query:
         # Ex: query.sum(i, 100, randrange(0, 5))
         # Summation of
         # 
-       for record in range(start_range,end_range):
-            if record in Record:
-
-
-                return True
-
-            else:
-                return False
+        rid_list = self.table.index.locate_range(start_range, end_range, aggregate_column_index)
+        # print(rid_list)
+        if rid_list == None:
+             return False
+        sum = 0
+        for rid in rid_list:
+            rid_ = rid[0]
+            value = self.table.read_record(rid_)[aggregate_column_index]
+            sum += value
+        return sum
 
     """
     incremenets one column of the record
