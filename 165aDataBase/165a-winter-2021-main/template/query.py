@@ -21,7 +21,14 @@ class Query:
     # Return False if record doesn't exist or is locked due to 2PL
     """
     def delete(self, key):
-        pass
+        # print(columns[0])
+        if self.table.delete_record(*columns) != False:
+            return True
+
+        else:
+            return False
+       
+        #pass
 
     """
     # Insert a record with specified columns
