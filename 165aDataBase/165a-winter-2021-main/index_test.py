@@ -16,8 +16,10 @@ print(I)
 I.insert(0, None, 2)
 I.update(0,None,87,2)
 print(I.locate(0,87))
-I.update(0, 87, None, 2)
-print(I.locate(0,87))
+# I.update(0, 87, None, 2)
+# print(I.delete(0, 87, 2))
+# print(I.locate(0,87))
+
 
 
 

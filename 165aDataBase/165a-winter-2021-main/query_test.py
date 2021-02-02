@@ -12,7 +12,7 @@ query = Query(table)
 query2 = Query(table2)
 records = {}
 
-test_list = [[9999, None, 2 ,3, 4],
+test_list = [[9999, None, None,None, None],
             [9998, 1, 2, 4, 3]
             ]
 
@@ -51,8 +51,9 @@ query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
 query.update(9999, *update_data4) #[9999, None, None, 2, None]
 data = table.read_record(9999)
 
-print(data)
-data2 = query.select(9999, 0, [1, 1, 1, 1, 1])
-print(data2)
-data3 = query.increment(9999, 0)
-print(data3)
+# print(data)
+# data2 = query.select(9999, 0, [1, 1, 1, 1, 1])
+# # print(data2)
+# data3 = query.increment(9999, 0)
+# print(data3)
+query.delete(9999)

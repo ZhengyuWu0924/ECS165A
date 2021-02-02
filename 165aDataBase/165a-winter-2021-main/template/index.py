@@ -14,7 +14,6 @@ class Index:
         self.count_rid = [0] * table.num_columns # number of rid in each column
         self.col_tree_dic = {}
         self.create_index(table.Table_key)
-        pass
 
     """
     # returns the location of all records with the given value on column "column"
@@ -64,14 +63,13 @@ class Index:
             self.count_rid[column] = 1
             self.indices[column][value] = [rid]
 
-        pass
-
     def delete(self, column, value, rid):
+        if value is '/':
+            value = -MAX_LONGINT
         self.indices[column][value].remove(rid)
         if self.indices[column][value] == []:
             self.indices[column].__delitem__(value)
-
-        pass
+        return True
 
     def update(self, column, old_value, new_value, rid):
         if old_value is None:
@@ -80,7 +78,6 @@ class Index:
             new_value = -MAX_LONGINT
         self.delete(column, old_value, rid)
         self.insert(column, new_value, rid)
-        pass
 
     """
     # optional: Drop index of specific column

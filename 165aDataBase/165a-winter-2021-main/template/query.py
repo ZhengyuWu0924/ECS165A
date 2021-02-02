@@ -1,5 +1,6 @@
 from template.table import Table, Record
 from template.index import Index
+from template.config import *
 
 
 class Query:
@@ -21,12 +22,29 @@ class Query:
     # Return False if record doesn't exist or is locked due to 2PL
     """
     def delete(self, key):
-        # print(columns[0])
-        if self.table.delete_record(*columns) != False:
+        # If record exist in table
+        # Delete in both table and bTree
+        if key in self.table.record_directory:
+            # Delete 2 base records in table
+            baseRecord = self.table.record_directory.pop(key, None)
+            self.table.record_directory.pop(baseRecord.rid, None)
+            
+            # If no tail records
+            if baseRecord.indirect != baseRecord.rid:
+                newestTemp = self.table.read_record(baseRecord.indirect)
+                baseRecord.columns = newestTemp
+            
+            # Delete value in each column
+            for index in range(len(baseRecord.columns)):
+                deleteVal = None
+                if baseRecord.columns[index] is '/' or baseRecord.columns[index] is None:
+                    deleteVal = -MAX_LONGINT
+                deleteVal = baseRecord.columns[index]
+                self.table.index.delete(index, deleteVal, baseRecord.rid)
+            # Successful delete
             return True
-
-        else:
-            return False
+        # If record doesn't exist
+        return False
        
         #pass
 

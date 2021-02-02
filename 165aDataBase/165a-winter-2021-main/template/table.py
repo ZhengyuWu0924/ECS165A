@@ -234,7 +234,8 @@ class Table:
                 cur_record.offset = prange.t_page[-1].writeRecord(data_)
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos
-            self.index.update(i, prev_data, data[i], base_record.rid)
+            # print("teble 237", i, prev_data, data_, base_record.rid)
+            self.index.update(i, prev_data, data_, base_record.rid)
         return 0
 
     def insert_page_to(self, ith_column):
