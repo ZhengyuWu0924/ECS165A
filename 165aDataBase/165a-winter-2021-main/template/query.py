@@ -47,6 +47,10 @@ class Query:
         # return False
        
         #pass
+        if self.table.delete_record(key)!= False:
+            return True
+        else:
+            return False
 
     """
     # Insert a record with specified columns
