@@ -26,6 +26,7 @@ class Prange:
             self.bpage_num += 1
             # print('27',self.bpage_num)
         if page_pos == 1:
+            page = Page(page_pos)
             self.t_page.append(page)
             self.tpage_num += 1
 
@@ -43,6 +44,7 @@ class Record:
         self.offset = 0
         self.Record_key = Record_key #ex. student_id
         self.columns = columns #tuple of grades
+        self.columns_ = columns
     """
     :TODO
     Return the current RID
@@ -136,6 +138,9 @@ class Table:
         self.page_directory.get(column).append(prange)
 
     def create_record(self, rid, indirect, value, data, first):
+        # print('indirect', indirect)
+        # if indirect == None:
+            # print('empty', rid)
         record = Record(rid, indirect, value, data)
         if first == True:
             self.record_directory.update({rid: record, value: record})
@@ -167,6 +172,8 @@ class Table:
             if self.page_directory.get(i)[-1].b_page[-1].has_capacity() == True:
                 if first == True:
                     rid = self.next_free_rid(0)
+                if rid == None:
+                    print('174', rid)
                 record = self.create_record(rid, rid, data[i], data, first)
                 prange = self.page_directory.get(i)[-1]
                 record.offset = prange.b_page[-1].writeRecord(data[i])
@@ -181,7 +188,10 @@ class Table:
                         rid = self.next_free_rid(0)
                     # self.free_brid = 0
                     self.free_trid = 0
-                    
+                else:
+                    if first == True:
+                        rid = self.next_free_rid(0)
+                    self.free_trid = 0
                 record = self.create_record(rid, rid, data[i], data, first)
                 prange = self.page_directory.get(i)[-1]
                 record.offset = prange.b_page[-1].writeRecord(data[i])
@@ -192,16 +202,27 @@ class Table:
 
     # if key does not exist then return false
     # To Do: update record to index
-    def update_record(self, *data):
-        std_id = data[0]
+    def update_record(self, key, *data):
+        if key == None:
+            print('empty key')
+        data = list(data)
+        if data[0] == None:
+            data[0] = key
+        std_id = key
         rid = self.next_free_rid(1)
         # print(rid)
-        base_record = self.record_directory.get(std_id)
+        base_record = self.record_directory.get(key)
+        # if base_record.indirect == None:
+        #     print('got none indirect', key)
+        #     return 
         if base_record == None:
             return False
         # get current prange position
+        # print(base_record.indirect)
         cur_prange_pos = base_record.prange_pos
         prev_record = self.record_directory.get(base_record.indirect)
+        if prev_record.rid == None:
+            print('None prev_record')
         cur_record = Record(rid, prev_record.indirect, data[0], data)
         base_record.indirect = cur_record.rid
         cur_record.indirect = prev_record.rid
@@ -225,12 +246,15 @@ class Table:
                 # print('176',prev_record.rid, prev_record.prange_pos, prev_record.page_pos, data_)
             if self.page_directory.get(i)[cur_prange_pos].t_page[-1].has_capacity() == True:
                 prange = self.page_directory.get(i)[cur_prange_pos]
+                # print(data_)
+                cur_record.columns[i] = data_
                 cur_record.offset = prange.t_page[-1].writeRecord(data_)
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos
             else:
                 self.update_page_to(i, cur_prange_pos)
-                prange = self.page_directory.get(i)
+                prange = self.page_directory.get(i)[cur_prange_pos]
+                cur_record.columns[i] = data_
                 cur_record.offset = prange.t_page[-1].writeRecord(data_)
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos

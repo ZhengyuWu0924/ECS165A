@@ -114,7 +114,7 @@ class Query:
                     #     if query_columns[index] == 1:
                     #         currentColumns.insert(len(currentColumns),
                     #         currentRecord)
-                    recordArr.insert(0, currentRecord)
+                    recordArr.insert(len(recordArr), currentRecord)
                     prevIndirect = prevRecord.indirect
                 # circle found
                 # add base record to the front
@@ -126,9 +126,10 @@ class Query:
                 #     if query_columns[index] == 1:
                 #         base_record.insert(len(base_record),
                 #                         ridRecord)
-                recordArr.insert(0, ridRecord)
+                recordArr.insert(len(recordArr), ridRecord)
                 # return list of records
-                return recordArr[0]
+                # print(recordArr[0])
+                return recordArr
         # if something wrong, return false
         return False
         
@@ -142,7 +143,7 @@ class Query:
     def update(self, key, *columns):
       # Record_key or table_key ?
         # print(columns[0])
-        if self.table.update_record(*columns) != False:
+        if self.table.update_record(key, *columns) != False:
             return True
 
         else:
@@ -162,8 +163,7 @@ class Query:
         # Ex: query.sum(i, 100, randrange(0, 5))
         # Summation of
         # 
-        rid_list = self.table.index.locate_range(start_range, end_range, aggregate_column_index)
-        # print(rid_list)
+        rid_list = self.table.index.locate_range(start_range, end_range, 0)
         if rid_list == None:
              return False
         sum = 0

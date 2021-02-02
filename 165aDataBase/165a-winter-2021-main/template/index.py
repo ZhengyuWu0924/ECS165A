@@ -32,7 +32,7 @@ class Index:
     """
 
     def locate_range(self, begin, end, column):
-        return list(self.indices[column].values(begin, end, excludemin=True, excludemax=True)) # return a list of lists
+        return list(self.indices[column].values(begin, end, excludemax=False)) # return a list of lists
 
 
     """
