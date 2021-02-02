@@ -32,7 +32,7 @@ class Index:
     """
 
     def locate_range(self, begin, end, column):
-        return list(self.indices[column].values(begin, end, excludemax=True)) # return a list of lists
+        return list(self.indices[column].values(begin, end, excludemin=True, excludemax=True)) # return a list of lists
 
 
     """
@@ -64,7 +64,7 @@ class Index:
             self.indices[column][value] = [rid]
 
     def delete(self, column, value, rid):
-        if value is '/':
+        if value == '/':
             value = -MAX_LONGINT
         self.indices[column][value].remove(rid)
         if self.indices[column][value] == []:
@@ -72,9 +72,9 @@ class Index:
         return True
 
     def update(self, column, old_value, new_value, rid):
-        if old_value is None:
+        if old_value == None:
             old_value = -MAX_LONGINT
-        if new_value is None:
+        if new_value == None:
             new_value = -MAX_LONGINT
         self.delete(column, old_value, rid)
         self.insert(column, new_value, rid)

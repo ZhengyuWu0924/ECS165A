@@ -37,7 +37,7 @@ class Query:
             # Delete value in each column
             for index in range(len(baseRecord.columns)):
                 deleteVal = None
-                if baseRecord.columns[index] is '/' or baseRecord.columns[index] is None:
+                if baseRecord.columns[index] == '/' or baseRecord.columns[index] is None:
                     deleteVal = -MAX_LONGINT
                 deleteVal = baseRecord.columns[index]
                 self.table.index.delete(index, deleteVal, baseRecord.rid)
@@ -85,11 +85,14 @@ class Query:
                 ridRecord = self.table.record_directory.get(baseRid)
                 # if only one base record
                 if ridRecord.indirect == baseRid:
-                    tempRecord = []
-                    for index in range(len(query_columns)):
-                        if query_columns[index] == 1:
-                            tempRecord.insert(len(tempRecord), ridRecord.columns[index])
-                    recordArr.insert(len(recordArr), tempRecord)
+                    # tempRecord = []
+                    # for index in range(len(query_columns)):
+                    #     # if query_columns[index] == 1:
+                    #     #     tempRecord.insert(len(tempRecord), ridRecord.columns[index])
+                    #     if query_columns[index] == 1:
+                    #         tempRecord.insert(len(tempRecord), ridRecord)
+                    # recordArr.insert(len(recordArr), tempRecord)
+                    recordArr.insert(len(recordArr), ridRecord)
                     # return the target columns
                     return recordArr
                 # set a flag to indicate circle linkedlist
@@ -103,23 +106,29 @@ class Query:
                     # add reacord to the front of the log book
                     currentRecord = prevRecord
                     prevRecord = self.table.record_directory.get(currentRecord.indirect)
-                    currentColumns = []
-                    for index in range(len(query_columns)):
-                        if query_columns[index] == 1:
-                            currentColumns.insert(len(currentColumns),
-                            currentRecord.columns[index])
-                    recordArr.insert(0, currentColumns)
+                    # currentColumns = []
+                    # for index in range(len(query_columns)):
+                    #     # if query_columns[index] == 1:
+                    #     #     currentColumns.insert(len(currentColumns),
+                    #     #     currentRecord.columns[index])
+                    #     if query_columns[index] == 1:
+                    #         currentColumns.insert(len(currentColumns),
+                    #         currentRecord)
+                    recordArr.insert(0, currentRecord)
                     prevIndirect = prevRecord.indirect
                 # circle found
                 # add base record to the front
-                base_record = []
-                for index in range(len(query_columns)):
-                    if query_columns[index] == 1:
-                        base_record.insert(len(base_record),
-                                        ridRecord.columns[index])
-                recordArr.insert(0, base_record)
+                # base_record = []
+                # for index in range(len(query_columns)):
+                #     # if query_columns[index] == 1:
+                #     #     base_record.insert(len(base_record),
+                #     #                     ridRecord.columns[index])
+                #     if query_columns[index] == 1:
+                #         base_record.insert(len(base_record),
+                #                         ridRecord)
+                recordArr.insert(0, ridRecord)
                 # return list of records
-                return recordArr
+                return recordArr[0]
         # if something wrong, return false
         return False
         
