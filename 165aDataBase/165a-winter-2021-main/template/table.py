@@ -262,32 +262,6 @@ class Table:
             self.index.update(i, prev_data, data_, base_record.rid)
         return 0
     
- 
-
-
-      def delete_record(self, key):
-        
-        #  Check key
-            if key == None:
-                print('empty key')
-                return False
-
-            else:
-                rid = self.next_free_rid(1)
-                base_record = self.record_directory.get(key)
-                #print(base_record)
-                base_record.pop(key)
-                base_record.pop(base_record.rid)
-
-                for i in range(base_record.columns):
-                    value = 0
-                    if base_record.columns[i] == '/' or not base_record.columns[i]:
-                        value = 0 
-                        return False
-                    else: 
-                        value = base_record.columns[i]
-                        self.table.index.delete(i, value, base_record.rid)
-                        return True
 
 
     def insert_page_to(self, ith_column):
