@@ -209,7 +209,8 @@ class Table:
         for i in range(self.num_columns):
             prev_data = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
             if prev_data == '/':
-                self.index.update(i, None, data[i], base_record.rid)
+                # self.index.update(i, None, data[i], base_record.rid)
+                prev_data = None
             # print('prev_data', prev_data)
             # self.index.update(i, prev_data, data[i], base_record.rid)
             data_ = data[i]
@@ -233,6 +234,7 @@ class Table:
                 cur_record.offset = prange.t_page[-1].writeRecord(data_)
                 cur_record.page_pos = len(prange.t_page) - 1
                 cur_record.prange_pos = cur_prange_pos
+            self.index.update(i, prev_data, data[i], base_record.rid)
         return 0
 
     def insert_page_to(self, ith_column):
