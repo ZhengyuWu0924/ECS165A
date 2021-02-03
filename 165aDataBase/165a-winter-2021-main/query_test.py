@@ -49,7 +49,7 @@ query.update(9999, *update_data) #[9999, 4, 3, None, 1]
 query.update(9999, *update_data2) #[9999, 4, 2, 4, 1]
 query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
 query.update(9999, *update_data4) #[9999, None, None, 2, None]
-query.delete(9999, 0, [1,1,1,1,1]) 
+query.delete(9999) 
 
 data = table.read_record(9999)
 
