@@ -48,25 +48,12 @@ class Query:
        
         #pass
         if key == None:
-             print('empty key')
-             return False
-
+            return False
+        elif self.table.delete_record(key) != False:
+            return True
         else:
-            #rid = self.next_free_rid(1)
-            #base_record = self.record_directory.get(key)
-                    #print(base_record)
-            baseRecord = self.table.record_directory.pop(key, None)
-            baseRecord = self.table.record_directory.pop(baseRecord.rid, None)
-
-            for i in range(len(baseRecord.columns)):
-                value = 0
-                if baseRecord.columns[i] == '/' or not baseRecord.columns[i]:
-                    value = 0 
-                    return False
-                else: 
-                    value = baseRecord.columns[i]
-                    self.table.index.delete(i, value, baseRecord.rid)
-                    return True
+            return False
+       
 
     """
     # Insert a record with specified columns
