@@ -262,7 +262,28 @@ class Table:
             self.index.update(i, prev_data, data_, base_record.rid)
         return 0
     
-
+     def delete_record(self, key): 
+        base_record = None
+        std_id = key
+        rid = self.next_free_rid(1)
+        #print(rid)
+        base_record = self.record_directory.get(key)
+        if base_record == None:
+            return False
+        #print(baseRecord)
+        if key in self.record_directory:
+            base_record = self.record_directory.pop(key)
+            base_record = self.record_directory.pop(base_record.rid)
+        
+        for i in range(self.num_columns):
+            value = 0
+            if base_record.columns[i] == '/' or not base_record.columns[i]:
+                value = 0 
+                return False
+            else: 
+                value = base_record.columns[i]
+                self.index.delete(i, value, base_record.rid)
+                return True
 
     def insert_page_to(self, ith_column):
         prange = self.page_directory.get(ith_column)[-1]
