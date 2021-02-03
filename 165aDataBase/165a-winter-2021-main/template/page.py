@@ -30,13 +30,19 @@ class Page:
                 self.takenArr.append(False)
                 self.data[start:end] = value.to_bytes(RECORD_SIZE,byteorder='big')
             self.num_records += 1
-            # print(cap)
+            # print('writing offset', offset)
             return offset
         else:
             print('Page writing failed')
             return -1
     
+    def updateRecord(self, offset, value):
+        start = offset * RECORD_SIZE
+        end = start + RECORD_SIZE
+        self.data[start: end] = value.to_bytes(RECORD_SIZE, byteorder='big')
+
     def readRecord(self, recordOffset):
+        # print('recordOffset', recordOffset)
         if recordOffset < 0 or recordOffset >= self.max_record_amount:
             print("Offset out of range")
             return -1
