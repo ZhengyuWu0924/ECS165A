@@ -22,29 +22,36 @@ class Query:
     # Return False if record doesn't exist or is locked due to 2PL
     """
     def delete(self, key):
+        data = [None, None, None, None, None]
+        record = self.table.update_record(key, *data, delete = True)
+        # print(record.schema)
+        if record != 0 and record.columns_[0] == None:
+            # print('succesful deletion')
+            return True
+        return False
         # If record exist in table
         # Delete in both table and bTree
-        if key in self.table.record_directory:
-            # Delete 2 base records in table
-            baseRecord = self.table.record_directory.pop(key, None)
-            self.table.record_directory.pop(baseRecord.rid, None)
+        # if key in self.table.record_directory:
+        #     # Delete 2 base records in table
+        #     baseRecord = self.table.record_directory.pop(key, None)
+        #     self.table.record_directory.pop(baseRecord.rid, None)
             
-            # If no tail records
-            if baseRecord.indirect != baseRecord.rid:
-                newestTemp = self.table.read_record(baseRecord.indirect)
-                baseRecord.columns = newestTemp
+        #     # If no tail records
+        #     if baseRecord.indirect != baseRecord.rid:
+        #         newestTemp = self.table.read_record(baseRecord.indirect)
+        #         baseRecord.columns_ = newestTemp
             
-            # Delete value in each column
-            for index in range(len(baseRecord.columns)):
-                deleteVal = None
-                if baseRecord.columns[index] == '/' or baseRecord.columns[index] is None:
-                    deleteVal = -MAX_LONGINT
-                deleteVal = baseRecord.columns[index]
-                self.table.index.delete(index, deleteVal, baseRecord.rid)
-            # Successful delete
-            return True
-        # If record doesn't exist
-        return False
+        #     # Delete value in each column
+        #     for index in range(len(baseRecord.columns)):
+        #         deleteVal = None
+        #         if baseRecord.columns[index] == '/' or baseRecord.columns[index] is None:
+        #             deleteVal = -MAX_LONGINT
+        #         deleteVal = baseRecord.columns_[index]
+        #         self.table.index.delete(index, deleteVal, baseRecord.rid)
+        #     # Successful delete
+        #     return True
+        # # If record doesn't exist
+        # return False
        
         #pass
 
@@ -143,7 +150,7 @@ class Query:
     def update(self, key, *columns):
       # Record_key or table_key ?
         # print(columns[0])
-        if self.table.update_record(key, *columns) != False:
+        if self.table.update_record(key, *columns, delete = False) != False:
             return True
 
         else:
@@ -164,6 +171,7 @@ class Query:
         # Summation of
         # 
         rid_list = self.table.index.locate_range(start_range, end_range, 0)
+        # print(rid_list)
         if rid_list == None:
              return False
         sum = 0
