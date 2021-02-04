@@ -28,13 +28,14 @@ class Query:
         if record != 0 and record.columns_[0] == None:
             # print('succesful deletion')
             return True
+        print('fail deletion')
         return False
         # If record exist in table
         # Delete in both table and bTree
-        # if key in self.table.record_directory:
+        # if key in self.table.page_directory:
         #     # Delete 2 base records in table
-        #     baseRecord = self.table.record_directory.pop(key, None)
-        #     self.table.record_directory.pop(baseRecord.rid, None)
+        #     baseRecord = self.table.page_directory.pop(key, None)
+        #     self.table.page_directory.pop(baseRecord.rid, None)
             
         #     # If no tail records
         #     if baseRecord.indirect != baseRecord.rid:
@@ -83,13 +84,13 @@ class Query:
     """
     def select(self, key, column, query_columns):
         recordArr = []
-        if key in self.table.record_directory:
+        if key in self.table.page_directory:
             # get the base rid from table by bTree
             bTreeRIDs = self.table.index.locate(column, key)
             
             for baseRid in bTreeRIDs:
                 # base record, used later
-                ridRecord = self.table.record_directory.get(baseRid)
+                ridRecord = self.table.page_directory.get(baseRid)
                 # if only one base record
                 if ridRecord.indirect == baseRid:
                     # tempRecord = []
@@ -106,13 +107,13 @@ class Query:
                 circleFlag = ridRecord.indirect
                 # base record will indirect to the newest tail
                 # travel reverse to form the logbook 
-                prevRecord = self.table.record_directory.get(ridRecord.indirect)
+                prevRecord = self.table.page_directory.get(ridRecord.indirect)
                 prevIndirect = prevRecord.indirect
                 # whlie there is not a circle
                 while prevIndirect != circleFlag:
                     # add reacord to the front of the log book
                     currentRecord = prevRecord
-                    prevRecord = self.table.record_directory.get(currentRecord.indirect)
+                    prevRecord = self.table.page_directory.get(currentRecord.indirect)
                     # currentColumns = []
                     # for index in range(len(query_columns)):
                     #     # if query_columns[index] == 1:

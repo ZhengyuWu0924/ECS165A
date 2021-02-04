@@ -1,7 +1,8 @@
 from template.table import *
 from template.query import *
 from random import choice, randint, sample, seed
-
+from template.db import Database
+from time import process_time
 
 table = Table('Grades', 5, 0)
 table2 = Table('Grades', 5, 1)
@@ -35,17 +36,31 @@ update_data4 = [9999, None, None, None, None]
 # # print(table2.rid_list)
 # print(len(table2.page_directory.get(0)))
 
-for i in test_list:
-    query.insert(*i)
-#     # table.update_record(*update_data)
-#     data = table.read_record(9999)
-#     print(table.get_rid_list())
-# data = table.read_record(9999)
-# table.update_record(*update_data3)
-query.update(9999, *update_data) #[9999, 4, 3, None, 1]
-query.update(9999, *update_data2) #[9999, 4, 2, 4, 1]
-query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
-query.update(9999, *update_data4) #[9999, None, None, None, None]
-value = query.sum(4, 5, 1)
-# data = table.read_record(9999)
-print(value)
+# for i in test_list:
+#     query.insert(*i)
+# #     # table.update_record(*update_data)
+# #     data = table.read_record(9999)
+# #     print(table.get_rid_list())
+# # data = table.read_record(9999)
+# # table.update_record(*update_data3)
+# query.update(9999, *update_data) #[9999, 4, 3, None, 1]
+# query.update(9999, *update_data2) #[9999, 4, 2, 4, 1]
+# query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
+# query.update(9999, *update_data4) #[9999, None, None, None, None]
+# value = query.sum(4, 5, 1)
+# # data = table.read_record(9999)
+# print(value)
+
+db = Database()
+grades_table = db.create_table('Grades', 5, 0)
+query = Query(grades_table)
+keys = []
+
+insert_time_0 = process_time()
+for i in range(0, 8193):
+    query.insert(906659671 + i, 93, 0, 0, 0)
+    keys.append(906659671 + i)
+insert_time_1 = process_time()
+
+print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
+print(query.table.prange_num)
