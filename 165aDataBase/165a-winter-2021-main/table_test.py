@@ -58,27 +58,59 @@ db = Database()
 db.open('./ECS165')
 os.mkdir('./ECS165/table1')
 os.mkdir('./ECS165/table2')
-f = open('./ECS165/table1/table.pkl', 'wb')
+f = open('./ECS165/table1/table1.pkl', 'wb')
 
 # f = open('./ECS165/table1/table.pkl')
-grades_table = db.create_table('Grades', 5, 0)
+grades_table = db.create_table('table1', 5, 0)
 # grades_table.index = None
 query = Query(grades_table)
 keys = []
 
-# insert_time_0 = process_time()
-for i in range(0, 8193):
+insert_time_0 = process_time()
+for i in range(0, 10):
     query.insert(906659671 + i, 93, 0, 0, 0)
     keys.append(906659671 + i)
 # insert_time_1 = process_time()
+indexFile = open('./ECS165/table1/table1_index.txt', 'w')
+for node in grades_table.index.indices[0].iteritems():
+    # indexFile.write(str(node.key()))
+    key = node[0]
+    # print(key)
+    indexFile.write(str(key) + "+")
+    indexFile.write(str(node[1][0]))
+    indexFile.write('\n')
+indexFile.close()
+
+# readIndex = open('./ECS165/table1/table_index.txt', 'r')
+# grades_table.index.create_index(0)
+# for line in readIndex.readlines():
+#     print(line.split('+')[0])
+#     print(line.split('+')[1][:-1])
+#     grades_table.index.insert(0, int(line.split('+')[0]), line.split('+')[1][:-1])
+
+# print(grades_table.index.locate(0, 906659672))
+
+
+
+# readIndexFile = open('./ECS165/table1/table_index.txt', 'w+')
+# print(readIndexFile.readline())
+# print(readIndexFile.readline().split(',')[0][1:])
+# print(readIndexFile.readline().split(',')[1][0:])
+
 grades_table.index = None
 pickle.dump(grades_table, f, True)
 f.close()
 
-f = open('./ECS165/table1/table.pkl', 'rb')
-table = pickle.load(f)
-print(table.name)
-f.close()
+# f = open('./ECS165/table1/table.pkl', 'rb')
+# table = pickle.load(f)
+# print(table.name)
+
+# f.close()
+db.close()
+
+
+db.open('./ECS165')
+print("open")
 # print(grades_table.page_directory.get(906659671))
 # f = open('test.pkl', 'wb')
 # pickle.dump(grades_table.page_directory, f,True)

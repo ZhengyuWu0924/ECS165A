@@ -20,11 +20,15 @@ class Database():
         self.path = path
         if not os.path.isdir(path):
             os.mkdir(path)
-            
             return
         for file in os.listdir(path):
-            t_path = file + '/table.pkl'
+            t_path = self.path + '/' + file + '/table.pkl'
+            index_path = file + '/table_index.txt'
             obj = pickle.load(t_path)
+            indexObj = open(index_path, 'w+')
+            obj.index.create_index(0)
+            for line in indexObj.readlines():
+                obj.index.insert(0, int(line.split('+')[0]), line.split('+')[1][:-1])
             self.tables_directory.append(obj)
             self.num_table += 1
         pass
@@ -39,9 +43,15 @@ class Database():
             path = self.path + '/' + table.name
             if not os.path.isdir(path):
                 os.mkdir(path)
+            # store index
+            indexFileAddress = path + '/' + table.name + '_index.txt'
+            indexFile = open(indexFileAddress, 'w')
+            for node in table.index.indices[0].iteritems():
+                indexFile.write(str(node[0]) + '+' + str(node[1][0]) + '\n')   
             f = open(path + '/' + table.name + '.pkl', 'wb')
             table.index = None #To Do: add index.txt
             pickle.dump(table, f, True)
+            indexFile.close()
             f.close()
         pass
 
