@@ -1,10 +1,14 @@
 from template.table import Table
+import os
+import io
+import pickle
 
 class Database():
 
     def __init__(self):
         self.tables_directory = []
         self.num_table = 0
+        self.path = ''
 
     """
     Not for MS1
@@ -13,6 +17,16 @@ class Database():
     Open a table from Secondary memory
     """
     def open(self, path):
+        self.path = path
+        if not os.path.isdir(path):
+            os.mkdir(path)
+            
+            return
+        for file in os.listdir(path):
+            t_path = file + '/table.pkl'
+            obj = pickle.load(t_path)
+            self.tables_directory.append(obj)
+            self.num_table += 1
         pass
     """
     Not for MS1
@@ -21,6 +35,14 @@ class Database():
     Close a table
     """
     def close(self):
+        for table in self.tables_directory:
+            path = self.path + '/' + table.name
+            if not os.path.isdir(path):
+                os.mkdir(path)
+            f = open(path + '/' + table.name + '.pkl', 'wb')
+            table.index = None #To Do: add index.txt
+            pickle.dump(table, f, True)
+            f.close()
         pass
 
     """

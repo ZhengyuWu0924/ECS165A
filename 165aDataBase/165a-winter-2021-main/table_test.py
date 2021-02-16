@@ -1,4 +1,7 @@
 from template.table import *
+import pickle
+import io
+import os
 from template.query import *
 from random import choice, randint, sample, seed
 from template.db import Database
@@ -52,15 +55,46 @@ update_data4 = [9999, None, None, None, None]
 # print(value)
 
 db = Database()
+db.open('./ECS165')
+os.mkdir('./ECS165/table1')
+os.mkdir('./ECS165/table2')
+f = open('./ECS165/table1/table.pkl', 'wb')
+
+# f = open('./ECS165/table1/table.pkl')
 grades_table = db.create_table('Grades', 5, 0)
+# grades_table.index = None
 query = Query(grades_table)
 keys = []
 
-insert_time_0 = process_time()
+# insert_time_0 = process_time()
 for i in range(0, 8193):
     query.insert(906659671 + i, 93, 0, 0, 0)
     keys.append(906659671 + i)
-insert_time_1 = process_time()
+# insert_time_1 = process_time()
+grades_table.index = None
+pickle.dump(grades_table, f, True)
+f.close()
 
-print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
-print(query.table.prange_num)
+f = open('./ECS165/table1/table.pkl', 'rb')
+table = pickle.load(f)
+print(table.name)
+f.close()
+# print(grades_table.page_directory.get(906659671))
+# f = open('test.pkl', 'wb')
+# pickle.dump(grades_table.page_directory, f,True)
+# print(a)
+# f.close()
+# print(grades_table.index.indices[0])
+
+# f = open('test.pkl', 'rb')
+# record = pickle.load(f)
+# print(record.get(906659671))
+
+# f = os.mkdir('./ECS165')
+# f = os.path.isdir('./ECS165')
+# f = os.listdir('./ECS165')
+# print(f)
+
+
+# print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
+# print(query.table.prange_num)
