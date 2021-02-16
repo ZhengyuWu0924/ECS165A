@@ -1,4 +1,5 @@
 from template.table import Table
+from template.index import Index
 import os
 import io
 import pickle
@@ -22,14 +23,21 @@ class Database():
             os.mkdir(path)
             return
         for file in os.listdir(path):
-            t_path = self.path + '/' + file + '/table.pkl'
-            index_path = file + '/table_index.txt'
-            obj = pickle.load(t_path)
-            indexObj = open(index_path, 'w+')
-            obj.index.create_index(0)
+            # print(file)
+            t_path = self.path + '/' + file + '/' + str(file) + '.pkl'
+            print(t_path)
+            index_path = self.path + '/' + file + '/table_index.txt'
+            f = open(t_path, 'rb+')
+            obj = pickle.load(f)
+            f.close()
+            indexObj = open(index_path, 'r+')
+            obj.index = Index(obj)
+            # obj.index.create_index(0)
             for line in indexObj.readlines():
                 obj.index.insert(0, int(line.split('+')[0]), line.split('+')[1][:-1])
             self.tables_directory.append(obj)
+            print(len(self.tables_directory))
+            indexObj.close()
             self.num_table += 1
         pass
     """
@@ -43,14 +51,22 @@ class Database():
             path = self.path + '/' + table.name
             if not os.path.isdir(path):
                 os.mkdir(path)
+            #store user data
+            dataAddr = path + '/' + 'disk.txt'
+            dataFile = open(dataAddr, 'w')
+            for recordRid in table.rid_list:
+                record = table.read_record(recordRid)
+                dataFile.write(str(record) + '\n')
+            dataFile.close()
             # store index
-            indexFileAddress = path + '/' + table.name + '_index.txt'
+            indexFileAddress = path + '/' + 'table_index.txt'
             indexFile = open(indexFileAddress, 'w')
             for node in table.index.indices[0].iteritems():
                 indexFile.write(str(node[0]) + '+' + str(node[1][0]) + '\n')   
             f = open(path + '/' + table.name + '.pkl', 'wb')
             table.index = None #To Do: add index.txt
             pickle.dump(table, f, True)
+            self.drop_table(table.name)
             indexFile.close()
             f.close()
         pass
