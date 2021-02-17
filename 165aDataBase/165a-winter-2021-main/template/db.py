@@ -51,7 +51,7 @@ class Database():
             path = self.path + '/' + table.name
             if not os.path.isdir(path):
                 os.mkdir(path)
-            #store user data
+            # store user data
             dataAddr = path + '/' + 'disk.txt'
             dataFile = open(dataAddr, 'w')
             for recordRid in table.rid_list:
@@ -62,12 +62,18 @@ class Database():
             indexFileAddress = path + '/' + 'table_index.txt'
             indexFile = open(indexFileAddress, 'w')
             for node in table.index.indices[0].iteritems():
-                indexFile.write(str(node[0]) + '+' + str(node[1][0]) + '\n')   
+                indexFile.write(str(node[0]) + '+' + str(node[1][0]) + '\n')
+            indexFile.close()
+            # store table info
             f = open(path + '/' + table.name + '.pkl', 'wb')
+             ## store page_range
+            for prange in table.prange_directory.items():
+                f_p = open(path + '/' + 'prange_' + str(prange[0]) + '.pkl', 'wb')
+                pickle.dump(prange[1], f_p, True)
+                f_p.close()
             table.index = None #To Do: add index.txt
             pickle.dump(table, f, True)
             self.drop_table(table.name)
-            indexFile.close()
             f.close()
         pass
 

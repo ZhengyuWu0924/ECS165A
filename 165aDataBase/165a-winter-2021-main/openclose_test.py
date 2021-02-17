@@ -14,7 +14,7 @@ newtable = db.create_table('table1', 5, 0)
 query = Query(newtable)
 keys = []
 
-for i in range(0, 10):
+for i in range(0, 100):
     query.insert(906659671 + i, 93, 0, 0, 0)
     keys.append(906659671 + i)
 
@@ -32,6 +32,7 @@ db.close()
 db.open('./ECS165')
 getTable = db.get_table('table1')
 print(getTable.read_record(906659671))
+print(len(getTable.prange_directory))
 
 """
 Print file
