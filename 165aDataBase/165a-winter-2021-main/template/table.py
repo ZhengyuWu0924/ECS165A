@@ -75,6 +75,7 @@ class Table:
         self.num_columns = num_columns
         self.prange_directory = {}  #'col_num': 'page_range_list'
         self.page_directory = {}    #'RID': 'record obj'
+        self.merge_directory = {} # a memory holder for merging
         self.index = Index(self)
         self.prange_num = 0
         self.free_brid = 0
