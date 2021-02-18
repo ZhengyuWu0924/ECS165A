@@ -75,7 +75,8 @@ class Table:
         self.num_columns = num_columns
         self.prange_directory = {}  #'col_num': 'page_range_list'
         self.page_directory = {}    #'RID': 'record obj'
-        self.merge_directory = {} # a memory holder for merging
+        self.origin_base_page_memory = [] # original unmerged and 
+        self.after_merge_base_page_memory = {} # the new copy that is being merged
         self.index = Index(self)
         self.prange_num = 0
         self.free_brid = 0
@@ -112,6 +113,14 @@ class Table:
     """
     def get_prange_num(self):
         return self.prange_num
+    
+    def load_basepage_copy_to_memory(self,column):
+        b_page = Page(0)
+        self.origin_base_page_memory.append(b_page)
+
+    def sort_tailpage_reverse(self,column):
+        t_page = Page(0)
+        tpage.sort(reverse=False)
 
     # To Do: build index during looping
     def create(self):
