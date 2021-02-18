@@ -391,7 +391,7 @@ class Table:
                 res.append(data)
         return res
 
-    def __merge(self):
+    def __merge(self,*data):
         for i in range(self.num_columns + META_DATA_COL_NUM):
             self.load_basepage_copy_to_memory(i)
             self.sort_tailpage_reverse(i)
