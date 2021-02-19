@@ -33,7 +33,7 @@ class Page:
             # print('writing offset', offset)
             return offset
         else:
-            print('Page writing failed')
+            print('Page writing failed', offset)
             return -1
     
     def updateRecord(self, offset, value):

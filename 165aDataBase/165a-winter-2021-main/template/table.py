@@ -1,5 +1,6 @@
 from template.page import *
 from template.index import Index
+from template.bufferpool import Bufferpool
 from template.config import *
 from time import time
 from datetime import datetime
@@ -10,12 +11,14 @@ class Prange:
         self.b_page = [b_page]
         self.t_page = [t_page]
         self.prange_id = prange_id
+        self.isFull = False
         self.bpage_num = 1
         self.tpage_num = 1
     
     def append_page(self, page_pos):
         if page_pos == 0:
             if self.bpage_num == MAX_PAGE_NUM:
+                self.isFull = True
                 return -1
             page = Page(page_pos) # modified 1935
             self.b_page.append(page)
@@ -77,11 +80,13 @@ class Table:
         self.page_directory = {}    #'RID': 'record obj'
         self.origin_base_page_memory = [] # original unmerged and 
         self.after_merge_base_page_memory = {} # the new copy that is being merged
+        self.buffer = Bufferpool(self)
         self.index = Index(self)
         self.prange_num = 0
         self.free_brid = 0
         self.free_trid = 0
         self.rid_list = []
+        self.rif_trash = []
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
         # MILESTONE1 never put RID back to pool
@@ -113,14 +118,6 @@ class Table:
     """
     def get_prange_num(self):
         return self.prange_num
-    
-    def load_basepage_copy_to_memory(self,column):
-        b_page = Page(0)
-        self.origin_base_page_memory.append(b_page)
-
-    def sort_tailpage_reverse(self,column):
-        t_page = Page(0)
-        tpage.sort(reverse=False)
 
     # To Do: build index during looping
     def create(self):
@@ -141,17 +138,21 @@ class Table:
             prange = Prange(b_page, t_page, self.prange_num)
             # tree = Index(self)
             # self.index.append(tree)
-            self.prange_directory.update({i: [prange]})
+            # self.prange_directory.update({i: [prange]})
+            self.buffer.load_prange(prange)
             # ZYW: add a return statement to return the prange? 
 
     # def insert_meta_data(self, prange, record):
     #     prange.b_page[record.page_pos].
     
-    def add_prange(self, column):
-        b_page = Page(0)
-        t_page = Page(0)
-        prange = Prange(b_page, t_page, self.prange_num)
-        self.prange_directory.get(column).append(prange)
+    def add_prange(self, column, times):
+        for i in range(times):
+            b_page = Page(0)
+            t_page = Page(0)
+            # print('adding prange' + str(self.prange_num))
+            prange = Prange(b_page, t_page, self.prange_num)
+            # self.prange_directory.get(column).append(prange)
+            self.buffer.load_prange(prange)
 
     def create_record(self, rid, indirect, value, data, first):
         # print('indirect', indirect)
@@ -165,85 +166,122 @@ class Table:
 
     # To Do: inset record to index
     def insert_record(self, *data):
-        #check if latest prange is full
         record = None 
         first = None
         rid = None
+        prange_ = None
         meta_cols = []
+        read = False
+        # flag = False
+        if len(self.buffer.pool) == 0:
+            read = True
         for i in range(self.num_columns + META_DATA_COL_NUM):
             if i == 0:
                 first = True
             else:
                 first = False
 
-            if self.prange_directory.get(i)[-1].b_page[-1].has_capacity() == True:
+            if read == True:
+                prange_ = self.buffer.read_from_disk(self.prange_num, i)
+                # self.prange_directory.update({i: []})
+                self.buffer.load_prange(prange_)
+            else:
+                # prange_ = self.prange_directory.get(i)[-1]
+                prange_ = self.buffer.get_(i, self.prange_num,'in')
+            
+            if prange_[0].b_page[-1].has_capacity() == True:
                 if i < self.num_columns:
                     if first == True:
                         rid = self.next_free_rid(0)
                         if rid == None:
-                            print('line 174 error: rid cannot be None')
+                            # print('line 174 error: rid cannot be None')
+                            return -1
                         record = self.create_record(rid, rid, data[i], data, first)
                         meta_cols = record.get_meta()
                         # print(meta_cols)
-                        prange = self.prange_directory.get(i)[-1]
-                        record.offset = prange.b_page[-1].writeRecord(data[i])
-                        record.page_pos = len(prange.b_page) - 1
+                        # prange = self.prange_directory.get(i)[-1]
+                        record.offset = prange_[0].b_page[-1].writeRecord(data[i])
+                        record.page_pos = len(prange_[0].b_page) - 1
                         record.prange_pos = self.prange_num
                     else:
-                        prange = self.prange_directory.get(i)[-1]
-                        prange.b_page[-1].writeRecord(data[i]) 
+                        # prange = self.prange_directory.get(i)[-1]
+                        # print(record.rid)
+                        prange_[0].b_page[-1].writeRecord(data[i]) 
                     self.index.insert(i, data[i], record.rid)
                 else:
                     # print('pos',i,record.prange_pos,record.page_pos,meta_cols[i - self.num_columns])
                     # print(meta_cols[0])
-                    prange = self.prange_directory.get(i)[record.prange_pos]
-                    prange.b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])    
+                    # prange = self.prange_directory.get(i)[record.prange_pos]
+                    # prange = self.buffer.get_(i, record.prange_pos)
+                    prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])    
             else:
                 if self.insert_page_to(i) == -1:
-                    self.add_prange(i)
+                    # print('i:',i)
+                    if first == True:
+                        print('adding prange')
+                        # flag = True
+                        self.prange_num += 1    
+                        self.add_prange(i, self.num_columns + META_DATA_COL_NUM)
+                        
                     # self.free_trid = 0
                     if i < self.num_columns:
                         if first == True:
-                            # print('adding prange')
-                            self.prange_num += 1
                             rid = self.next_free_rid(0)
                             record = self.create_record(rid, rid, data[i], data, first)
                             meta_cols = record.get_meta()
-                            prange = self.prange_directory.get(i)[-1]
-                            record.offset = prange.b_page[-1].writeRecord(data[i])
-                            record.page_pos = len(prange.b_page) - 1
+                            # prange = self.prange_directory.get(i)[-1]
+                            # print(self.prange_num)
+                            prange_ = self.buffer.get_(i, self.prange_num, 'in')
+                            # prange_[0].isFull = True
+                            # print('228',prange_[0].b_page[0].num_records)
+                            record.offset = prange_[0].b_page[-1].writeRecord(data[i])
+                            # print(self.buffer.pool[1][0][0].b_page[-1].num_records)
+                            # print('done')
+                            record.page_pos = len(prange_[0].b_page) - 1
                             record.prange_pos = self.prange_num
                         else:
-                            prange = self.prange_directory.get(i)[-1]
-                            prange.b_page[-1].writeRecord(data[i])
+                            # prange = self.prange_directory.get(i)[-1]
+                            prange_ = self.buffer.get_(i, self.prange_num, 'in')
+                            # prange_[0].isFull = True
+                            # print('236',prange_[0].b_page[0].num_records)
+                            prange_[0].b_page[-1].writeRecord(data[i])
                         self.index.insert(i, data[i], record.rid)
                     else:
-                        prange = self.prange_directory.get(i)[record.prange_pos]
-                        prange.b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])  
+                        # prange =
+                        # self.prange_directory.get(i)[record.prange_pos]
+                        prange_ = self.buffer.get_(i, self.prange_num, 'in')
+                        # print('242',prange_[0].b_page[0].num_records)
+                        # prange_[0].isFull = True
+                        prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])  
                     # self.free_brid = 0 
                 else:
+                    # print('i:',i)
                     # self.free_trid = 0
                     if i < self.num_columns:
                         if first == True:
                             rid = self.next_free_rid(0)
                             record = self.create_record(rid, rid, data[i], data, first)
                             meta_cols = record.get_meta()
-                            prange = self.prange_directory.get(i)[-1]
-                            record.offset = prange.b_page[-1].writeRecord(data[i])
-                            record.page_pos = len(prange.b_page) - 1
+                            # prange = self.prange_directory.get(i)[-1]
+                            # print('252',prange_[0].b_page[-1].num_records)
+                            record.offset = prange_[0].b_page[-1].writeRecord(data[i])
+                            record.page_pos = len(prange_[0].b_page) - 1
                             record.prange_pos = self.prange_num
                         else:
-                            prange = self.prange_directory.get(i)[-1]
-                            prange.b_page[-1].writeRecord(data[i])
+                            # prange = self.prange_directory.get(i)[-1]
+                            prange_[0].b_page[-1].writeRecord(data[i])
                         self.index.insert(i, data[i], record.rid)
                     else:
-                        prange = self.prange_directory.get(i)[record.prange_pos]
-                        prange.b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])  
+                        # prange =
+                        # self.prange_directory.get(i)[record.prange_pos]
+                        # print('265',prange_[0].b_page[-1].num_records, 'page_pos', record.page_pos)
+                        prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])  
         return True
 
     def checkSchema(self, record, data):
         schema = ''
         for i in range(self.num_columns):
+            # print(len(data))
             if record.columns[i] == data[i] or data[i] == None:
                 schema += '1'
             else:
@@ -289,9 +327,17 @@ class Table:
         base_record.schema = schema
         brecord_meta = base_record.get_meta()
 
-        self.prange_directory.get(self.num_columns + INDIRECTION_COLUMN)[base_record.prange_pos].b_page[base_record.page_pos].updateRecord(base_record.offset, brecord_meta[INDIRECTION_COLUMN])
+        # self.prange_directory.get(self.num_columns +
+        # INDIRECTION_COLUMN)[base_record.prange_pos].b_page[base_record.page_pos].updateRecord(base_record.offset,
+        # brecord_meta[INDIRECTION_COLUMN])
+        self.buffer.get_(self.num_columns + INDIRECTION_COLUMN, base_record.prange_pos, 'up')[0].b_page[base_record.page_pos].updateRecord(base_record.offset,
+        brecord_meta[INDIRECTION_COLUMN])
         
-        self.prange_directory.get(self.num_columns + SCHEMA_ENCODING_COLUMN)[base_record.prange_pos].b_page[base_record.page_pos].updateRecord(base_record.offset, schema)
+        # self.prange_directory.get(self.num_columns +
+        # SCHEMA_ENCODING_COLUMN)[base_record.prange_pos].b_page[base_record.page_pos].updateRecord(base_record.offset,
+        # schema)
+        self.buffer.get_(self.num_columns + SCHEMA_ENCODING_COLUMN, base_record.prange_pos, 'up')[0].b_page[base_record.page_pos].updateRecord(base_record.offset, schema)
+
         cur_record.indirect = prev_record.rid
         self.page_directory.update({cur_record.rid: cur_record})
         for i in range(self.num_columns + META_DATA_COL_NUM):
@@ -314,54 +360,64 @@ class Table:
                         data_ = None
                     # print('176',prev_record.rid, prev_record.prange_pos,
                     # prev_record.page_pos, data_)
-            if self.prange_directory.get(i)[cur_prange_pos].t_page[-1].has_capacity() == True:
+            # if
+            # self.prange_directory.get(i)[cur_prange_pos].t_page[-1].has_capacity()
+            # == True:
+            prange_ = self.buffer.get_(i, cur_prange_pos, 'up')
+            if prange_[0].t_page[-1].has_capacity():
                 if i < self.num_columns:
-                    prange = self.prange_directory.get(i)[cur_prange_pos]
+                    # prange = self.prange_directory.get(i)[cur_prange_pos]
                     # print(data_)
                     cur_record.columns[i] = data_
-                    cur_record.offset = prange.t_page[-1].writeRecord(data_)
-                    cur_record.page_pos = len(prange.t_page) - 1
+                    cur_record.offset = prange_[0].t_page[-1].writeRecord(data_)
+                    cur_record.page_pos = len(prange_[0].t_page) - 1
                     cur_record.prange_pos = cur_prange_pos
                     self.index.update(i, prev_data, data_, base_record.rid)
                 else:
                     # print('writing meta data', i , cur_prange_pos, cur_record.page_pos)
-                    prange = self.prange_directory.get(i)[cur_prange_pos]
-                    prange.t_page[cur_record.page_pos].writeRecord(meta_cols[i - self.num_columns])    
+                    # prange = self.prange_directory.get(i)[cur_prange_pos]
+                    prange_[0].t_page[cur_record.page_pos].writeRecord(meta_cols[i - self.num_columns])    
             else:
                 if i < self.num_columns:
                     self.update_page_to(i, cur_prange_pos)
-                    prange = self.prange_directory.get(i)[cur_prange_pos]
+                    # prange = self.prange_directory.get(i)[cur_prange_pos]
                     cur_record.columns[i] = data_
-                    cur_record.offset = prange.t_page[-1].writeRecord(data_)
-                    cur_record.page_pos = len(prange.t_page) - 1
+                    cur_record.offset = prange_[0].t_page[-1].writeRecord(data_)
+                    cur_record.page_pos = len(prange_[0].t_page) - 1
                     cur_record.prange_pos = cur_prange_pos
                     self.index.update(i, prev_data, data_, base_record.rid)
                 else:
                     self.update_page_to(i, cur_prange_pos)
                     # print('writing meta data')
-                    prange = self.prange_directory.get(i)[cur_prange_pos]
-                    prange.t_page[cur_record.page_pos].writeRecord(meta_cols[i - self.num_columns])
+                    # prange = self.prange_directory.get(i)[cur_prange_pos]
+                    prange_[0].t_page[cur_record.page_pos].writeRecord(meta_cols[i - self.num_columns])
         if delete == True:
+            # self.rid_list.remove()
             return cur_record
         return 0
 
     def insert_page_to(self, ith_column):
-        prange = self.prange_directory.get(ith_column)[-1]
-        if prange.append_page(0) == -1:
+        # prange = self.prange_directory.get(ith_column)[-1]
+        prange = self.buffer.get_(ith_column, self.prange_num, 'in')
+        if prange[0].append_page(0) == -1:
             return -1  
 
     def get_rid_list(self):
         return self.rid_list
 
     def update_page_to(self, ith_column, ith_prange):
-        prange = self.prange_directory.get(ith_column)[ith_prange]
-        prange.append_page(1)
+        # prange = self.prange_directory.get(ith_column)[ith_prange]
+        prange = self.buffer.get_(ith_column, ith_prange, 'up')
+        prange[0].append_page(1)
 
     def get_data(self, rid, ith_col, prange_pos, page_pos, offset):
         if rid[0] == 'b':
-            page = self.prange_directory.get(ith_col)[prange_pos].b_page[page_pos]
+            # page =
+            # self.prange_directory.get(ith_col)[prange_pos].b_page[page_pos]
+            page = self.buffer.get_(ith_col, prange_pos,'up')[0].b_page[page_pos]
             return page.readRecord(offset)
-        page = self.prange_directory.get(ith_col)[prange_pos].t_page[page_pos]
+        page = self.buffer.get_(ith_col, prange_pos,'up')[0].t_page[page_pos]
+        # page = self.prange_directory.get(ith_col)[prange_pos].t_page[page_pos]
         # print(page.readRecord(offset))
         return page.readRecord(offset)
 
@@ -379,21 +435,33 @@ class Table:
         res = []
         for i in range(self.num_columns + META_DATA_COL_NUM):
             if rid[0] == 'b':
-                page = self.prange_directory.get(i)[prange_pos].b_page[page_pos]
+                # page =
+                # self.prange_directory.get(i)[prange_pos].
+                page = self.buffer.get_(i, prange_pos, 're')[0].b_page[page_pos]
                 data = page.readRecord(offset)
                 # print(data)
                 res.append(data)
             else:
                 # print(offset)
-                page = self.prange_directory.get(i)[prange_pos].t_page[page_pos]
+                # page =
+                # self.prange_directory.get(i)[prange_pos].t_page[page_pos]
+                page = self.buffer.get_(i, prange_pos, 're')[0].t_page[page_pos]
                 data = page.readRecord(offset)
                 # print(data)
                 res.append(data)
         return res
 
-    def __merge(self,*data):
+    def load_basepage_copy_to_memory(self,column):
+        b_page = Page(0)
+        self.origin_base_page_memory.append(b_page)
+
+    def sort_tailpage_reverse(self,column):
+        t_page = Page(0)
+        tpage.sort(reverse=False)
+    
+    def __merge(self, *data):
         for i in range(self.num_columns + META_DATA_COL_NUM):
             self.load_basepage_copy_to_memory(i)
             self.sort_tailpage_reverse(i)
-            
+    
 

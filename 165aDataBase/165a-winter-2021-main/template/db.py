@@ -1,7 +1,7 @@
 from template.table import Table
 from template.index import Index
 import os
-import io
+# import io
 import pickle
 
 class Database():
@@ -66,12 +66,15 @@ class Database():
             indexFile.close()
             # store table info
             f = open(path + '/' + table.name + '.pkl', 'wb')
-             ## store page_range
-            for prange in table.prange_directory.items():
-                f_p = open(path + '/' + 'prange_' + str(prange[0]) + '.pkl', 'wb')
-                pickle.dump(prange[1], f_p, True)
-                f_p.close()
+            ### store page_range
+            os.mkdir(path + '/' + 'Data')
+            for num in range(len(table.prange_directory[0])):
+                for prange in table.prange_directory.items():
+                    f_p = open(path + '/' + 'Data' + '/' + 'prange' + str(num) + '_' + str(prange[0]) + '.pkl', 'wb')
+                    pickle.dump(prange[1], f_p, True)
+                    f_p.close()
             table.index = None #To Do: add index.txt
+            table.prange_directory = {}
             pickle.dump(table, f, True)
             self.drop_table(table.name)
             f.close()
