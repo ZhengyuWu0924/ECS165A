@@ -1,5 +1,5 @@
 from template.config import *
-from template.table import *
+# from template.table import *
 import io
 import os
 import pickle
@@ -8,7 +8,7 @@ import pickle
 class Bufferpool:
 
     def __init__(self, table):
-        basic_path = './ECS165/' + table.name + '/'
+        self.basic_path = './ECS165/' + table.name + '/'
         # self.pool = [[],[],[]]
         # LRU cache
         self.pool = {}
@@ -19,6 +19,17 @@ class Bufferpool:
         self.cap = self.num_cols * MAX_PRANGE
         self.prange_num = 0
         self.load_pos = 0
+
+        """
+        NOT SURE IF SHOULD BE PLACED IN __init__ OR SOMEWHERE ELSE
+        MAYBE IN BUFFERPOOL
+        After open a database, for the specific table
+        start the Daemon thread to clean the trashbin periodically
+        @func: cleanBin - function in bufferpool to clean trashbin
+        cleanMission = threading.Thread(target=cleanBin)
+        cleanMission.daemon = True
+        cleanMission.start()
+        """
 
     # prg means prange,  pg means page
     def get_(self, col, prg_pos, mode):
@@ -58,10 +69,10 @@ class Bufferpool:
         return -1
 
     # no use
-    def set_(self, col, prg_pos, prange):
-        if prg_pos in self.pool_prg_num_list:
-            index = self.pool_prg_num_list.index(prg_pos)
-            self.pool[index][col] = prange
+    # def set_(self, col, prg_pos, prange):
+    #     if prg_pos in self.pool_prg_num_list:
+    #         index = self.pool_prg_num_list.index(prg_pos)
+    #         self.pool[index][col] = prange
 
     def load_prange(self, prange):
         if prange == None:
@@ -89,13 +100,13 @@ class Bufferpool:
         # self.prange_num += 1
 
     # no use    
-    def free_pool(self):
-        record = []
-        for i in range(self.num_cols):
-            record.append(self.pool[0].pop(0))
-            self.prange_num -= 1
-        self.trash_bin.append(record)
-        self.trash_prg_num_list.append(self.pool_prg_num_list.pop(0))
+    # def free_pool(self):
+    #     record = []
+    #     for i in range(self.num_cols):
+    #         record.append(self.pool[0].pop(0))
+    #         self.prange_num -= 1
+    #     self.trash_bin.append(record)
+    #     self.trash_prg_num_list.append(self.pool_prg_num_list.pop(0))
 
     def write_to_disk(self, prange, col):
         path = self.basic_path + 'Data'
@@ -120,4 +131,12 @@ class Bufferpool:
         # self.load_prange(prange)
         return prange
 
+
+"""
+cleanBin():
+    whlie True:
+        process to clean the bin:
+        merge tail page and base page
+        time.sleep(x) # x = time interval to clean the bin.
+"""
         
