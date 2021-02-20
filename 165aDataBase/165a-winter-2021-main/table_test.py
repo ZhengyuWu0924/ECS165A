@@ -16,8 +16,8 @@ query = Query(table)
 query2 = Query(table2)
 records = {}
 
-test_list = [[9999, None, 2 ,None, 4],
-            [9998, 1, 2, 4, 3],
+test_list = [[9999,None,2,None,4],
+            [9998,1,2,4,3],
             ]
 
 update_data = [9999, 4, 3, None, 1]
@@ -39,24 +39,28 @@ update_data4 = [9999, None, None, None, None]
 # # print(table2.rid_list)
 # print(len(table2.page_directory.get(0)))
 
-# for i in test_list:
-#     query.insert(*i)
-# #     # table.update_record(*update_data)
-# #     data = table.read_record(9999)
-# #     print(table.get_rid_list())
-# # data = table.read_record(9999)
-# # table.update_record(*update_data3)
-query.update(9999, *update_data) #[9999, 4, 3, None, 1]
-query.update(9999, *update_data2) #[9999, 4, 2, 4, 1]
-query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
-query.update(9999, *update_data4) #[9999, None, None, None, None]
+"""
+for i in test_list:
+    #query.insert(*i)
+    table.update_record(*update_data, 9999, delete = True)
+    data = table.read_record(9999,)
+    print(table.get_rid_list())
+data = table.read_record(9999)
+
+table.update_record(*update_data3)
+"""
+
+
+#query.update(9999,*update_data) #[9999, 4, 3, None, 1]
+#query.update(9999,*update_data2) #[9999, 4, 2, 4, 1]
+#query.update(9990, *update_data3) #[9990, 4, 2, None, 2]
+#query.update(9999, *update_data4) #[9999, None, None, None, None]
 # value = query.sum(4, 5, 1)
 # # data = table.read_record(9999)
 # print(value)
-table.__merge(9999)
-print('1111')
 
-"""
+
+
 db = Database()
 db.open('./ECS165')
 os.mkdir('./ECS165/table1')
@@ -133,4 +137,3 @@ print("open")
 
 # print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
 # print(query.table.prange_num)
-"""

@@ -302,7 +302,8 @@ class Table:
         std_id = key
         rid = self.next_free_rid(1)
         # print(rid)
-        base_record = self.page_directory.get(key)
+        #base_record = self.page_directory.get(key)
+        ##print("update type = ", type(base_record))
         # if base_record.indirect == None:
         #     print('got none indirect', key)
         #     return 
@@ -453,13 +454,14 @@ class Table:
                 res.append(data)
         return res
 
-    def __merge(self, rid):
+    def merge(self, key):
         #find lastest tail page
-        base_record = self.page_directory.get(rid)
-        tail_record = self.page_directory.get(base_record.indirect)
+        base_record = self.page_directory.get(key)
+        print("type = ", type(base_record))
+        #tail_record = self.page_directory.get(base_record.indirect)
         #merge data
 
-        base_record.columns = tail_record.columuns
+        #base_record.columns = tail_record.columuns
         #update page_directory
 
         #update_tps
