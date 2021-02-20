@@ -457,7 +457,7 @@ class Table:
 
     def sort_tailpage_reverse(self,column):
         t_page = Page(0)
-        tpage.sort(reverse=False)
+        t_page.sort(reverse=False)
     
     def __merge(self, *data):
         for i in range(self.num_columns + META_DATA_COL_NUM):
