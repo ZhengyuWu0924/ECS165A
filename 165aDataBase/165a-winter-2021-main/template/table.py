@@ -46,6 +46,7 @@ class Record:
         self.columns = columns #tuple of grades
         # latest data
         self.columns_ = columns
+        self.tps = 0
     
     def get_meta(self):
         # print(datetime.fromtimestamp(self.timestamp))
@@ -451,17 +452,20 @@ class Table:
                 res.append(data)
         return res
 
-    def load_basepage_copy_to_memory(self,column):
-        b_page = Page(0)
-        self.origin_base_page_memory.append(b_page)
+    def __merge(self, rid):
+        #find lastest tail page
+        bpage = self.page_directory[rid]
+        tpage = self.page_directory[bpage.indirect]
+        #merge data
 
-    def sort_tailpage_reverse(self,column):
-        t_page = Page(0)
-        tpage.sort(reverse=False)
-    
-    def __merge(self, *data):
-        for i in range(self.num_columns + META_DATA_COL_NUM):
-            self.load_basepage_copy_to_memory(i)
-            self.sort_tailpage_reverse(i)
-    
+        #update page_directory
+
+        #update_tps
+
+
+
+
+
+
+
 
