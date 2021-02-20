@@ -47,6 +47,7 @@ class Record:
         # latest data
         self.columns_ = columns
         self.tps = 0
+        self.num_uapdate = 0
     
     def get_meta(self):
         # print(datetime.fromtimestamp(self.timestamp))
@@ -454,10 +455,11 @@ class Table:
 
     def __merge(self, rid):
         #find lastest tail page
-        bpage = self.page_directory[rid]
-        tpage = self.page_directory[bpage.indirect]
+        base_record = self.page_directory.get(rid)
+        tail_record = self.page_directory.get(base_record.indirect)
         #merge data
 
+        base_record.columns = tail_record.columuns
         #update page_directory
 
         #update_tps
