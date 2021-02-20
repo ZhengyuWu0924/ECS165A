@@ -33,33 +33,7 @@ obj = newtable.page_directory.get(906659671)
 print(obj.columns_)
 print(obj.tps)
 
+#base_record.tps < base_record.update_num  haven't merged
+#base_record.tps = base_record.update_num  merged
 
 
-# keys.append(906659671 + i)
-# indexFile = open()
-# for node in newtable.index.indices[0].iteritems():
-#     # indexFile.write(str(node.key()))
-#     key = node[0]
-#     # print(key)
-#     indexFile.write(str(key) + "+")
-#     indexFile.write(str(node[1][0]))
-#     indexFile.write('\n')
-# db.close()
-
-# print(newtable.buffer.pool[0][8][0].bpage_num)
-# print(newtable.buffer.pool[0][0][0].tpage_num)
-
-
-
-# db.open('./ECS165')
-# getTable = db.get_table('nidaye')
-# # print(getTable.read_record(906659671))
-# print(len(getTable.prange_directory))
-
-"""
-Print file
-"""
-# readFile = open('./ECS165/table1/table1_index.txt', 'r')
-# for line in readFile.readlines():
-#     print(line.split('+')[0])
-#     print(line.split('+')[1][:-1])
