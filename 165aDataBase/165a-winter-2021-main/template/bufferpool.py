@@ -30,7 +30,7 @@ class Bufferpool:
         cleanMission.daemon = True
         cleanMission.start()
         """
-
+    
     # prg means prange,  pg means page
     def get_(self, col, prg_pos, mode):
         if self.pool == []:
@@ -152,11 +152,13 @@ class Bufferpool:
         return prange_list
 
 
-"""
-cleanBin():
-    whlie True:
-        process to clean the bin:
-        merge tail page and base page
-        time.sleep(x) # x = time interval to clean the bin.
-"""
+    def cleanBin(self):
+        for prange_list in self.pool.values():
+            self.write_to_disk(prange_list)
+        for prange_list in self.trash_bin.values():
+            self.write_to_disk(prange_list)
+        # whlie True:
+            # process to clean the bin:
+            # merge tail page and base page
+            # time.sleep(x) # x = time interval to clean the bin.
         

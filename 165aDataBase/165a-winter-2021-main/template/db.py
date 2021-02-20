@@ -24,22 +24,24 @@ class Database():
             return
         for file in os.listdir(path):
             # print(file)
-            t_path = self.path + '/' + file + '/' + str(file) + '.pkl'
+            t_path = self.path + '/' + str(file) + '/' + str(file) + '.pkl'
             print(t_path)
+
             index_path = self.path + '/' + file + '/table_index.txt'
             f = open(t_path, 'rb+')
-            obj = pickle.load(f)
+            table = pickle.load(f)
             f.close()
+
             indexObj = open(index_path, 'r+')
-            obj.index = Index(obj)
+            table.index = Index(table)
             # obj.index.create_index(0)
             for line in indexObj.readlines():
-                obj.index.insert(0, int(line.split('+')[0]), line.split('+')[1][:-1])
-            self.tables_directory.append(obj)
-            print(len(self.tables_directory))
+                table.index.insert(0, int(line.split('+')[0]), line.split('+')[1][:-1])
+            # self.tables_directory.append(obj)
+            self.append_table(table)
+            # print(len(self.tables_directory))
             indexObj.close()
             self.num_table += 1
-        pass
     """
     Not for MS1
     Implement this in future 
@@ -67,18 +69,18 @@ class Database():
             # store table info
             f = open(path + '/' + table.name + '.pkl', 'wb')
             ### store page_range
-            os.mkdir(path + '/' + 'Data')
-            for num in range(len(table.prange_directory[0])):
-                for prange in table.prange_directory.items():
-                    f_p = open(path + '/' + 'Data' + '/' + 'prange' + str(num) + '_' + str(prange[0]) + '.pkl', 'wb')
-                    pickle.dump(prange[1], f_p, True)
-                    f_p.close()
-            table.index = None #To Do: add index.txt
-            table.prange_directory = {}
+            # os.mkdir(path + '/' + 'Data')
+            # for num in range(len(table.prange_directory[0])):
+            #     for prange in table.prange_directory.items():
+            #         f_p = open(path + '/' + 'Data' + '/' + 'prange' + str(num) + '_' + str(prange[0]) + '.pkl', 'wb')
+            #         pickle.dump(prange[1], f_p, True)
+            #         f_p.close()
+            table.index = None
+            table.buffer.cleanBin()
+            # table.prange_directory = {}
             pickle.dump(table, f, True)
             self.drop_table(table.name)
             f.close()
-        pass
 
     """
     Append a table to database

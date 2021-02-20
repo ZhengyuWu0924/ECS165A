@@ -78,7 +78,7 @@ class Table:
         self.name = name
         self.Table_key = Table_key
         self.num_columns = num_columns
-        self.prange_directory = {}  #'col_num': 'page_range_list'
+        # self.prange_directory = {}  #'col_num': 'page_range_list'
         self.page_directory = {}    #'RID': 'record obj'
         self.origin_base_page_memory = [] # original unmerged and 
         self.after_merge_base_page_memory = {} # the new copy that is being merged

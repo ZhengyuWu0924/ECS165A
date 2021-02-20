@@ -10,29 +10,30 @@ from time import process_time
 
 db = Database()
 db.open('./ECS165')
-newtable = db.create_table('nidaye', 5, 0)
+# newtable = db.create_table('nidaye', 5, 0)
+newtable = db.get_table('nidaye')
 query = Query(newtable)
 keys = []
 
-for i in range(0, 30000):
-    query.insert(906659671 + i, 93, 0, 0, 0)
-    keys.append(906659671 + i)
+# for i in range(0, 30000):
+#     query.insert(906659671 + i, 93, 0, 0, 0)
+#     keys.append(906659671 + i)
 
-update_time_0 = process_time()
-for i in range(0, 30000):
-    up = [0, 94, 1, 1, 1]
-    query.update(906659671 + i, *up)
-update_time_1 = process_time()
-print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
+# update_time_0 = process_time()
+# for i in range(0, 30000):
+#     up = [0, 94, 1, 1, 1]
+#     query.update(906659671 + i, *up)
+# update_time_1 = process_time()
+# print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
 
-for i in range(0, 30000):
-    query.insert(106659671 + i, 93, 0, 0, 0)
-    keys.append(106659671 + i)
+# for i in range(0, 30000):
+#     query.insert(106659671 + i, 93, 0, 0, 0)
+#     keys.append(106659671 + i)
 
-for i in range(0, 30000):
-    up = [0, 94, 2, 2, 2]
-    query.update(906659671 + i, *up)
-
+# for i in range(0, 30000):
+#     up = [0, 94, 2, 2, 2]
+#     query.update(906659671 + i, *up)
+db.close()
     # keys.append(906659671 + i)
 # indexFile = open()
 # for node in newtable.index.indices[0].iteritems():
