@@ -47,7 +47,7 @@ class Record:
         # latest data
         self.columns_ = columns
         self.tps = 0
-        self.num_uapdate = 0
+        self.update_num = 0
     
     def get_meta(self):
         # print(datetime.fromtimestamp(self.timestamp))
@@ -291,10 +291,22 @@ class Table:
         # print('243. schema', schema)
         return int(schema)
 
+    def addtps(self,key,num):
+        base_record = self.page_directory.get(key)
+        tail_record = self.page_directory.get(base_record.indirect)
+        tail_record.tps = base_record.update_num
+
     # if key does not exist then return false
     # To Do: update record to index
     def update_record(self, key, *data, delete):
         # print(data)
+
+        """
+        tps
+        """
+        base_record = self.page_directory.get(key)
+        base_record.update_num += 1
+
         schema = None
         if key == None:
             print('empty key')
@@ -302,7 +314,7 @@ class Table:
         std_id = key
         rid = self.next_free_rid(1)
         # print(rid)
-        #base_record = self.page_directory.get(key)
+        base_record = self.page_directory.get(key)
         ##print("update type = ", type(base_record))
         # if base_record.indirect == None:
         #     print('got none indirect', key)
@@ -394,6 +406,7 @@ class Table:
                     # print('writing meta data')
                     # prange = self.prange_directory.get(i)[cur_prange_pos]
                     prange_[0].t_page[cur_record.page_pos].writeRecord(meta_cols[i - self.num_columns])
+        self.addtps(key,base_record.update_num)
         if delete == True:
             # self.rid_list.remove()
             return cur_record
@@ -457,14 +470,17 @@ class Table:
     def merge(self, key):
         #find lastest tail page
         base_record = self.page_directory.get(key)
-        print("type = ", type(base_record))
-        #tail_record = self.page_directory.get(base_record.indirect)
+        #print("type = ", type(base_record))
+        tail_record = self.page_directory.get(base_record.indirect)
         #merge data
-
-        #base_record.columns = tail_record.columuns
-        #update page_directory
+        base_record.columns_ = tail_record.columns_
 
         #update_tps
+        base_record.tps = tail_record.tps
+
+
+
+
 
 
 

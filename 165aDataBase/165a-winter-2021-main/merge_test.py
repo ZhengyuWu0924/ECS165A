@@ -23,8 +23,19 @@ for i in range(0, 30000):
     up = [0, 94, 1, 1, 1]
     query.update(906659671 + i, *up)
 
+obj = newtable.page_directory.get(906659671)
+print(obj.columns_)
+print(obj.tps)
 
-    # keys.append(906659671 + i)
+newtable.merge(906659671)
+
+obj = newtable.page_directory.get(906659671)
+print(obj.columns_)
+print(obj.tps)
+
+
+
+# keys.append(906659671 + i)
 # indexFile = open()
 # for node in newtable.index.indices[0].iteritems():
 #     # indexFile.write(str(node.key()))
