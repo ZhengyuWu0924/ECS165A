@@ -9,7 +9,7 @@ from time import process_time
 
 
 db = Database()
-# db.open('./ECS165')
+db.open('./ECS165')
 newtable = db.create_table('nidaye', 5, 0)
 query = Query(newtable)
 keys = []

@@ -105,7 +105,7 @@ class Database():
                 print("Already exists such a table")
                 print("Returning this table")
                 return table
-        
+        os.mkdir(self.path + '/' + name)
         new_table = Table(name, num_columns, key)
         new_table.create()
         self.append_table(new_table)
