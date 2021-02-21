@@ -12,9 +12,8 @@ class Bufferpool:
         # self.pool = [[],[],[]]
         # LRU cache
         self.pool = {}
-        # self.pool_prg_num_list = []
         self.trash_bin = {}
-        # self.trash_prg_num_list = []
+        self.merge_waiting_set = set() # storing updated rid of record
         self.num_cols = table.num_columns + META_DATA_COL_NUM
         self.cap = self.num_cols * MAX_PRANGE
         self.prange_num = 0
@@ -58,14 +57,6 @@ class Bufferpool:
             self.trash_bin[trash_list[0][0].prange_id] = trash_list
             self.pool[prg_pos] = prange_list
             return prange_list[col]
-            # self.trash_prg_num_list.remove(prg_pos)
-            # for prange in prange_list:
-            #     self.load_prange(prange[0])
-            # if prg_pos in self.pool_prg_num_list:
-            #     index = self.pool_prg_num_list.index(prg_pos)
-            #     # print(len(self.pool[index]))
-            #     prange =  self.pool[index][col]
-            #     return prange
         # searching in disk
         else:
             prange_list = self.read_from_disk(prg_pos)
@@ -82,6 +73,13 @@ class Bufferpool:
     #     if prg_pos in self.pool_prg_num_list:
     #         index = self.pool_prg_num_list.index(prg_pos)
     #         self.pool[index][col] = prange
+
+    def findTrash(self, prg_pos):
+        if len(self.trash_bin) == 0:
+            return -1
+        if prg_pos in self.trash_bin:
+            return self.trash_bin[prg_pos]
+        return -1
 
     def move_to_trash(self, trash_list):
         disk_list = None
@@ -104,19 +102,6 @@ class Bufferpool:
                 # self.trash_bin[prange_list[0][0].prange_id] = prange_list
                 self.move_to_trash(trash_list)
             self.pool[prange.prange_id] = [[prange]]
-        # # print(prange.prange_id)
-        # idx = 0
-        # if self.prange_num == self.cap:
-        #     self.free_pool()
-        # for index in range(MAX_PRANGE):
-        #     # print(len(self.pool[index]), index)
-        #     if len(self.pool[index]) < self.num_cols:
-        #         self.pool[index].append([prange])
-        #         idx = index
-        #         break
-        # if prange.prange_id not in self.pool_prg_num_list:
-        #     self.pool_prg_num_list.insert(index, prange.prange_id)
-        # self.prange_num += 1
 
     # no use    
     # def free_pool(self):

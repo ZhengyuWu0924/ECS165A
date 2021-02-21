@@ -76,6 +76,7 @@ class Index:
             old_value = -MAX_LONGINT
         if new_value == None:
             new_value = -MAX_LONGINT
+        # print(rid)
         self.delete(column, old_value, rid)
         self.insert(column, new_value, rid)
 

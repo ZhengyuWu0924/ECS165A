@@ -4,6 +4,7 @@ from template.bufferpool import Bufferpool
 from template.config import *
 from time import time
 from datetime import datetime
+import threading
 
 class Prange:
 
@@ -12,6 +13,7 @@ class Prange:
         self.t_page = [t_page]
         self.prange_id = prange_id
         self.isFull = False
+        self.dirty = False
         self.bpage_num = 1
         self.tpage_num = 1
     
@@ -89,6 +91,11 @@ class Table:
         self.free_trid = 0
         self.rid_list = []
         self.rif_trash = []
+        self.merge_waiting_set = set() # storing rid which needs to be merged
+
+        thread = threading.Thread(target=self.merge)
+        thread.daemon = True
+        thread.start()
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
         # MILESTONE1 never put RID back to pool
@@ -162,7 +169,7 @@ class Table:
             # print('empty', rid)
         record = Record(rid, indirect, value, data)
         if first == True:
-            self.page_directory.update({rid: record, value: record})
+            self.page_directory.update({rid: record})
             self.rid_list.append(rid)
         return record
 
@@ -183,15 +190,16 @@ class Table:
             else:
                 first = False
 
-            if read == True:
-                prange_ = self.buffer.read_from_disk(self.prange_num, i)
-                # self.prange_directory.update({i: []})
-                self.buffer.load_prange(prange_)
-            else:
-                # prange_ = self.prange_directory.get(i)[-1]
-                prange_ = self.buffer.get_(i, self.prange_num,'in')
+            # if read == True:
+            #     prange_ = self.buffer.read_from_disk(self.prange_num, i)
+            #     # self.prange_directory.update({i: []})
+            #     self.buffer.load_prange(prange_)
+            # else:
+            #     # prange_ = self.prange_directory.get(i)[-1]
+            prange_ = self.buffer.get_(i, self.prange_num,'in')
             
             if prange_[0].b_page[-1].has_capacity() == True:
+                prange_[0].dirty = True
                 if i < self.num_columns:
                     if first == True:
                         rid = self.next_free_rid(0)
@@ -254,11 +262,13 @@ class Table:
                         prange_ = self.buffer.get_(i, self.prange_num, 'in')
                         # print('242',prange_[0].b_page[0].num_records)
                         # prange_[0].isFull = True
-                        prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])  
+                        prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])
+                    prange_[0].dirty = True    
                     # self.free_brid = 0 
                 else:
                     # print('i:',i)
                     # self.free_trid = 0
+                    prange_[0].dirty = True 
                     if i < self.num_columns:
                         if first == True:
                             rid = self.next_free_rid(0)
@@ -298,15 +308,8 @@ class Table:
 
     # if key does not exist then return false
     # To Do: update record to index
-    def update_record(self, key, *data, delete):
+    def update_record(self, key, brid, *data, delete):
         # print(data)
-
-        """
-        tps
-        """
-        base_record = self.page_directory.get(key)
-        base_record.update_num += 1
-
         schema = None
         if key == None:
             print('empty key')
@@ -314,7 +317,8 @@ class Table:
         std_id = key
         rid = self.next_free_rid(1)
         # print(rid)
-        base_record = self.page_directory.get(key)
+        base_record = self.page_directory.get(brid)
+        base_record.update_num += 1
         ##print("update type = ", type(base_record))
         # if base_record.indirect == None:
         #     print('got none indirect', key)
@@ -323,7 +327,6 @@ class Table:
             print('record doesnt exist')
             return False
         # get current prange position
-        # print(base_record.indirect)
         cur_prange_pos = base_record.prange_pos
         prev_record = self.page_directory.get(base_record.indirect)
         if prev_record.rid == None:
@@ -381,32 +384,38 @@ class Table:
             prange_ = self.buffer.get_(i, cur_prange_pos, 'up')
             if prange_[0].t_page[-1].has_capacity():
                 if i < self.num_columns:
+                    # print(i)
                     # prange = self.prange_directory.get(i)[cur_prange_pos]
                     # print(data_)
+                    prange_[0].dirty = True
                     cur_record.columns[i] = data_
                     cur_record.offset = prange_[0].t_page[-1].writeRecord(data_)
                     cur_record.page_pos = len(prange_[0].t_page) - 1
                     cur_record.prange_pos = cur_prange_pos
-                    self.index.update(i, prev_data, data_, base_record.rid)
+                    if i == 0:
+                        self.index.update(i, prev_data, data_, base_record.rid)
                 else:
                     # print('writing meta data', i , cur_prange_pos, cur_record.page_pos)
                     # prange = self.prange_directory.get(i)[cur_prange_pos]
                     prange_[0].t_page[cur_record.page_pos].writeRecord(meta_cols[i - self.num_columns])    
             else:
                 if i < self.num_columns:
-                    self.update_page_to(i, cur_prange_pos)
+                    prange_[0].dirty = True
+                    self.update_page_to(prange_)
                     # prange = self.prange_directory.get(i)[cur_prange_pos]
                     cur_record.columns[i] = data_
                     cur_record.offset = prange_[0].t_page[-1].writeRecord(data_)
                     cur_record.page_pos = len(prange_[0].t_page) - 1
                     cur_record.prange_pos = cur_prange_pos
-                    self.index.update(i, prev_data, data_, base_record.rid)
+                    if i == 0:
+                        self.index.update(i, prev_data, data_, base_record.rid)
                 else:
-                    self.update_page_to(i, cur_prange_pos)
+                    self.update_page_to(prange_)
                     # print('writing meta data')
                     # prange = self.prange_directory.get(i)[cur_prange_pos]
                     prange_[0].t_page[cur_record.page_pos].writeRecord(meta_cols[i - self.num_columns])
-        self.addtps(key,base_record.update_num)
+        self.merge_waiting_set.add(base_record.rid)
+        self.addtps(brid,base_record.update_num)
         if delete == True:
             # self.rid_list.remove()
             return cur_record
@@ -421,9 +430,9 @@ class Table:
     def get_rid_list(self):
         return self.rid_list
 
-    def update_page_to(self, ith_column, ith_prange):
+    def update_page_to(self, prange):
         # prange = self.prange_directory.get(ith_column)[ith_prange]
-        prange = self.buffer.get_(ith_column, ith_prange, 'up')
+        # prange = self.buffer.get_(ith_column, ith_prange, 'up')
         prange[0].append_page(1)
 
     def get_data(self, rid, ith_col, prange_pos, page_pos, offset):
@@ -467,16 +476,25 @@ class Table:
                 res.append(data)
         return res
 
-    def merge(self, key):
+    def merge(self):
         #find lastest tail page
-        base_record = self.page_directory.get(key)
-        #print("type = ", type(base_record))
-        tail_record = self.page_directory.get(base_record.indirect)
-        #merge data
-        base_record.columns_ = tail_record.columns_
+        for rid in self.merge_waiting_set:
+            cpy_base_record = self.page_directory.get(rid)
+            prange_list = self.buffer.findTrash(rid)
+            if prange_list != -1:
 
-        #update_tps
-        base_record.tps = tail_record.tps
+                #print("type = ", type(base_record))
+                tail_record = self.page_directory.get(cpy_base_record.indirect)
+                #merge data
+                cpy_base_record.columns_ = tail_record.columns_
+                cpy_base_record.column = tail_record.column
+                
+                for i in range(1, self.num_columns):
+                    prange_list[i][0].b_page[cpy_base_record.page_pos].updateRecord(cpy_base_record.offset, cpy_base_record.columns_[i])
+                #update_tps
+                base_record.tps = tail_record.tps
+                self.page_directory.update({rid: cpy_base_record})
+                time.sleep(1)
 
 
 

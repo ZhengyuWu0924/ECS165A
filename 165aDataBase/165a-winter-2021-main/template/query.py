@@ -23,7 +23,8 @@ class Query:
     """
     def delete(self, key):
         data = [None, None, None, None, None]
-        record = self.table.update_record(key, *data, delete = True)
+        brid = self.table.index.locate(0, key)
+        record = self.table.update_record(key, brid[0], *data, delete = True)
         # print(record.schema)
         if record != 0 and record.columns_[0] == None:
             # print('succesful deletion')
@@ -84,10 +85,10 @@ class Query:
     """
     def select(self, key, column, query_columns):
         recordArr = []
-        if key in self.table.page_directory:
+        # if key in self.table.page_directory:
             # get the base rid from table by bTree
-            bTreeRIDs = self.table.index.locate(column, key)
-            
+        bTreeRIDs = self.table.index.locate(column, key)
+        if isinstance(bTreeRIDs, list):    
             for baseRid in bTreeRIDs:
                 # base record, used later
                 ridRecord = self.table.page_directory.get(baseRid)
@@ -139,6 +140,7 @@ class Query:
                 # print(recordArr[0])
                 return recordArr
         # if something wrong, return false
+        print('selecting falied, key is not found or record is deleted')
         return False
         
 
@@ -151,13 +153,16 @@ class Query:
     def update(self, key, *columns):
       # Record_key or table_key ?
         # print(columns[0])
-        if self.table.update_record(key, *columns, delete = False) != False:
-            return True
+        bTreeRIDs = self.table.index.locate(0, key)
+        # print(type(bTreeRIDs[0]))
+        if isinstance(bTreeRIDs, list): 
+            # print('up')
+            if self.table.update_record(key, bTreeRIDs[0], *columns, delete = False) != False:
+                return True
+            else:
+                return False
+        return False
 
-        else:
-            return False
-       
-        #pass
 
     """
     :param start_range: int         # Start of the key range to aggregate 
