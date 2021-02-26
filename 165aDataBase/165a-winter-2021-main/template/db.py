@@ -25,7 +25,7 @@ class Database():
         for file in os.listdir(path):
             # print(file)
             t_path = self.path + '/' + str(file) + '/' + str(file) + '.pkl'
-            print(t_path)
+            # print(t_path)
 
             index_path = self.path + '/' + file + '/table_index.txt'
             f = open(t_path, 'rb+')
@@ -108,7 +108,7 @@ class Database():
                 print("Returning this table")
                 return table
         os.mkdir(self.path + '/' + name)
-        new_table = Table(name, num_columns, key)
+        new_table = Table(name, num_columns, key, self.path)
         new_table.create()
         self.append_table(new_table)
         self.num_table += 1

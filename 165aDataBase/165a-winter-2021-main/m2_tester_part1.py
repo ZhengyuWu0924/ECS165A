@@ -63,4 +63,7 @@ for i in range(0, 100):
     # else:
     #     print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
 print("Aggregate finished")
+
+# print(len(grades_table.merge_waiting_set))
+print(grades_table.merge)
 db.close()

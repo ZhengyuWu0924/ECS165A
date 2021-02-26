@@ -76,7 +76,8 @@ class Table:
     :param num_columns: int     #Number of Columns: all columns are integer
     :param key: int             #Index of table key in columns
     """
-    def __init__(self, name, num_columns, Table_key):
+    def __init__(self, name, num_columns, Table_key, path):
+        self.path = path
         self.name = name
         self.Table_key = Table_key
         self.num_columns = num_columns
@@ -92,10 +93,8 @@ class Table:
         self.rid_list = []
         self.rif_trash = []
         self.merge_waiting_set = set() # storing rid which needs to be merged
+        self.merge_times = 0
 
-        thread = threading.Thread(target=self.merge)
-        thread.daemon = True
-        thread.start()
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
         # MILESTONE1 never put RID back to pool
@@ -105,6 +104,11 @@ class Table:
         # self.total_RID = 100000000
 
     # b_page and t_page will have seperate rids
+    def merge_start(self):
+        thread = threading.Thread(target=self.merge)
+        thread.daemon = True
+        thread.start()
+
     def next_free_rid(self, page_pos):
         if page_pos == 0:
             rid = 'b' + str(self.free_brid)
@@ -130,17 +134,6 @@ class Table:
 
     # To Do: build index during looping
     def create(self):
-        """
-        Pseudo Code:
-        Each page rage has two kind of pages
-        page[0][x] means BASE PAGE, x is the detail page number
-        page[1][y] mean TAIL PAGE, y is the detail page number
-        As creating the page, x is depends on the amount of data gonna insert
-        y is setted to 0 (which is only 1 page) safe resource
-        for all categories
-            self.page_directory.append('caretogire[i]' : [page[0][0], page[1][0]])
-
-        """
         for i in range(self.num_columns + META_DATA_COL_NUM):
             b_page = Page(0)
             t_page = Page(0)
@@ -228,7 +221,7 @@ class Table:
                 if self.insert_page_to(i) == -1:
                     # print('i:',i)
                     if first == True:
-                        print('adding prange')
+                        # print('adding prange')
                         # flag = True
                         self.prange_num += 1    
                         self.add_prange(i, self.num_columns + META_DATA_COL_NUM)
@@ -309,7 +302,9 @@ class Table:
     # if key does not exist then return false
     # To Do: update record to index
     def update_record(self, key, brid, *data, delete):
-        # print(data)
+        if len(self.buffer.trash_bin) != 0:
+            self.merge_start()
+        # self.merge_times += 1
         schema = None
         if key == None:
             print('empty key')
@@ -477,12 +472,15 @@ class Table:
         return res
 
     def merge(self):
+        # print('merge starting')
         #find lastest tail page
-        for rid in self.merge_waiting_set:
+        # print(self.merge_waiting_set)
+        while len(self.merge_waiting_set) != 0:
+            rid = self.merge_waiting_set.pop()
+            self.merge_times += 1
             cpy_base_record = self.page_directory.get(rid)
             prange_list = self.buffer.findTrash(rid)
             if prange_list != -1:
-
                 #print("type = ", type(base_record))
                 tail_record = self.page_directory.get(cpy_base_record.indirect)
                 #merge data
@@ -494,7 +492,9 @@ class Table:
                 #update_tps
                 base_record.tps = tail_record.tps
                 self.page_directory.update({rid: cpy_base_record})
-                time.sleep(1)
+                print('done')
+                # self.merge_waiting_set.remove(rid)
+                time.sleep(2)
 
 
 

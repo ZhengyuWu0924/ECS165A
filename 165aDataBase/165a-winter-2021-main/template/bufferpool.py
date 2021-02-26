@@ -8,7 +8,7 @@ import pickle
 class Bufferpool:
 
     def __init__(self, table):
-        self.basic_path = './ECS165/' + table.name + '/'
+        self.basic_path = table.path + '/' + table.name + '/'
         # self.pool = [[],[],[]]
         # LRU cache
         self.pool = {}
@@ -78,6 +78,7 @@ class Bufferpool:
         if len(self.trash_bin) == 0:
             return -1
         if prg_pos in self.trash_bin:
+            print('found')
             return self.trash_bin[prg_pos]
         return -1
 

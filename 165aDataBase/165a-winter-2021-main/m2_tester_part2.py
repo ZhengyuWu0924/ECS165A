@@ -41,11 +41,11 @@ for key in keys:
         print('select error on', key, ':', record, ', correct:', records[key])
 print("Select finished")
 
-# deleted_keys = sample(keys, 100)
-# for key in deleted_keys:
-#     # print(key)
-#     query.delete(key)
-#     records.pop(key, None)
+deleted_keys = sample(keys, 100)
+for key in deleted_keys:
+    # print(key)
+    query.delete(key)
+    records.pop(key, None)
 
 for i in range(0, 100):
     r = sorted(sample(range(0, len(keys)), 2))
