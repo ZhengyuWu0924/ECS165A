@@ -80,6 +80,7 @@ class Bufferpool:
         if prg_pos in self.trash_bin:
             print('found')
             return self.trash_bin[prg_pos]
+        # print(self.trash_bin)
         return -1
 
     def move_to_trash(self, trash_list):

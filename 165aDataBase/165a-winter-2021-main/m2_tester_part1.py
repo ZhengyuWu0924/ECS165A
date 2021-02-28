@@ -65,5 +65,5 @@ for i in range(0, 100):
 print("Aggregate finished")
 
 # print(len(grades_table.merge_waiting_set))
-print(grades_table.merge)
+# print(grades_table.merge)
 db.close()

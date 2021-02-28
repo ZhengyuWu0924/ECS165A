@@ -66,9 +66,13 @@ class Index:
     def delete(self, column, value, rid):
         if value == '/':
             value = -MAX_LONGINT
-        self.indices[column][value].remove(rid)
-        if self.indices[column][value] == []:
-            self.indices[column].__delitem__(value)
+        # print(self.indices[column][value])
+        # print(self.indices[column][value])
+        if self.indices[column].has_key(value):
+            if rid in self.indices[column][value]:
+                self.indices[column][value].remove(rid)
+            if self.indices[column][value] == []:
+                self.indices[column].__delitem__(value)
         return True
 
     def update(self, column, old_value, new_value, rid):

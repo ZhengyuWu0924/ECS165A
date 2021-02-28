@@ -14,19 +14,34 @@ newtable = db.create_table('nidaye', 5, 0)
 query = Query(newtable)
 keys = []
 
-for i in range(0, 30000):
-    query.insert(906659671 + i, 93, 0, 0, 0)
-    keys.append(906659671 + i)
+for i in range(0, 5):
+    query.insert(1 + i, 93, 0, 0, 0)
+    keys.append(1 + i)
 
 # update_time_0 = process_time()
-for i in range(0, 30000):
+for i in range(0, 4):
     up = [0, 94, 1, 1, 1]
-    query.update(906659671 + i, *up)
+    query.update(1 + i, *up)
+
+for i in range(0, 2):
+    up = [0, 95, 2, 1, 1]
+    query.update(1 + i, *up)
 # query.update(906659671, 5, 5, 5, 5, 5)
 # query.update(906659671, 5, 5, 5, 6, 5)
 # query.update(906659671, 5, 2, 5, 6, 5)
+records = query.select(95, 1, [1,1,1,1,1])
+for record in records:    
+    print(record.columns_)
 # print(newtable.merge_times)
-print(newtable.merge_waiting_set)
+# print(newtable.merge_waiting_set)
+for item in newtable.index.indices[1].iteritems():
+    info = str(item[0]) + '_'
+    for num in item[1]:
+         info = info +  str(num) + '_'
+    # print(info)
+info = info.split('_')
+# for rid in info[1:-1]:
+#     print(int(info[0]), rid)
 db.close()
 # obj = newtable.page_directory.get(906659671)
 # print(obj.columns_)

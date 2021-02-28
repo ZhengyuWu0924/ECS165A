@@ -5,6 +5,7 @@ from template.config import *
 from time import time
 from datetime import datetime
 import threading
+import copy
 
 class Prange:
 
@@ -309,7 +310,6 @@ class Table:
         if key == None:
             print('empty key')
         data = list(data)
-        std_id = key
         rid = self.next_free_rid(1)
         # print(rid)
         base_record = self.page_directory.get(brid)
@@ -354,12 +354,16 @@ class Table:
         cur_record.indirect = prev_record.rid
         self.page_directory.update({cur_record.rid: cur_record})
         for i in range(self.num_columns + META_DATA_COL_NUM):
-            prev_data = None
+            prev_data = None 
             if i < self.num_columns:
                 prev_data = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
-                if prev_data == '/':
-                    # self.index.update(i, None, data[i], base_record.rid)
+                if prev_data == '/' or prev_data == None:
+                    if data[i] != None:
+                        self.index.update(i, None, data[i], base_record.rid)
                     prev_data = None
+                else:
+                    # print(i, prev_data, data[i])
+                    self.index.update(i, prev_data, data[i], base_record.rid)    
                 # print('prev_data', prev_data)
                 # self.index.update(i, prev_data, data[i], base_record.rid)
                 data_ = data[i]
@@ -387,8 +391,8 @@ class Table:
                     cur_record.offset = prange_[0].t_page[-1].writeRecord(data_)
                     cur_record.page_pos = len(prange_[0].t_page) - 1
                     cur_record.prange_pos = cur_prange_pos
-                    if i == 0:
-                        self.index.update(i, prev_data, data_, base_record.rid)
+                    # if i == 0:
+                    #     self.index.update(i, prev_data, data_, base_record.rid)
                 else:
                     # print('writing meta data', i , cur_prange_pos, cur_record.page_pos)
                     # prange = self.prange_directory.get(i)[cur_prange_pos]
@@ -402,8 +406,8 @@ class Table:
                     cur_record.offset = prange_[0].t_page[-1].writeRecord(data_)
                     cur_record.page_pos = len(prange_[0].t_page) - 1
                     cur_record.prange_pos = cur_prange_pos
-                    if i == 0:
-                        self.index.update(i, prev_data, data_, base_record.rid)
+                    # if i == 0:
+                    #     self.index.update(i, prev_data, data_, base_record.rid)
                 else:
                     self.update_page_to(prange_)
                     # print('writing meta data')
@@ -477,9 +481,9 @@ class Table:
         # print(self.merge_waiting_set)
         while len(self.merge_waiting_set) != 0:
             rid = self.merge_waiting_set.pop()
-            self.merge_times += 1
             cpy_base_record = self.page_directory.get(rid)
-            prange_list = self.buffer.findTrash(rid)
+            prange_list = self.buffer.findTrash(cpy_base_record.prange_pos)
+            # print(cpy_base_record.prange_pos,'\n')
             if prange_list != -1:
                 #print("type = ", type(base_record))
                 tail_record = self.page_directory.get(cpy_base_record.indirect)
@@ -488,10 +492,13 @@ class Table:
                 cpy_base_record.column = tail_record.column
                 
                 for i in range(1, self.num_columns):
-                    prange_list[i][0].b_page[cpy_base_record.page_pos].updateRecord(cpy_base_record.offset, cpy_base_record.columns_[i])
+                    cpy_page = copy.copy(prange_list[i][0].b_page[cpy_base_record.page_pos])
+                    cpy_page.updateRecord(cpy_base_record.offset, cpy_base_record.columns_[i])
+                    prange_list[i][0].b_page[cpy_base_record.page_pos] = cpy_page
                 #update_tps
                 base_record.tps = tail_record.tps
                 self.page_directory.update({rid: cpy_base_record})
+                self.merge_times += 1
                 print('done')
                 # self.merge_waiting_set.remove(rid)
                 time.sleep(2)

@@ -88,6 +88,7 @@ class Query:
         # if key in self.table.page_directory:
             # get the base rid from table by bTree
         bTreeRIDs = self.table.index.locate(column, key)
+        # print(bTreeRIDs)
         if isinstance(bTreeRIDs, list):    
             for baseRid in bTreeRIDs:
                 # base record, used later
@@ -101,7 +102,8 @@ class Query:
                     #     if query_columns[index] == 1:
                     #         tempRecord.insert(len(tempRecord), ridRecord)
                     # recordArr.insert(len(recordArr), tempRecord)
-                    recordArr.insert(len(recordArr), ridRecord)
+                    # recordArr.insert(len(recordArr), ridRecord)
+                    recordArr.append(ridRecord)
                     # return the target columns
                     return recordArr
                 # set a flag to indicate circle linkedlist
@@ -111,20 +113,12 @@ class Query:
                 prevRecord = self.table.page_directory.get(ridRecord.indirect)
                 prevIndirect = prevRecord.indirect
                 # whlie there is not a circle
-                while prevIndirect != circleFlag:
-                    # add reacord to the front of the log book
-                    currentRecord = prevRecord
-                    prevRecord = self.table.page_directory.get(currentRecord.indirect)
-                    # currentColumns = []
-                    # for index in range(len(query_columns)):
-                    #     # if query_columns[index] == 1:
-                    #     #     currentColumns.insert(len(currentColumns),
-                    #     #     currentRecord.columns[index])
-                    #     if query_columns[index] == 1:
-                    #         currentColumns.insert(len(currentColumns),
-                    #         currentRecord)
-                    recordArr.insert(len(recordArr), currentRecord)
-                    prevIndirect = prevRecord.indirect
+                # while prevIndirect != circleFlag:
+                #     # add reacord to the front of the log book
+                #     currentRecord = prevRecord
+                #     prevRecord = self.table.page_directory.get(currentRecord.indirect)
+                #     recordArr.insert(len(recordArr), currentRecord)
+                #     prevIndirect = prevRecord.indirect
                 # circle found
                 # add base record to the front
                 # base_record = []
@@ -135,10 +129,11 @@ class Query:
                 #     if query_columns[index] == 1:
                 #         base_record.insert(len(base_record),
                 #                         ridRecord)
-                recordArr.insert(len(recordArr), ridRecord)
+                # recordArr.insert(len(recordArr), ridRecord)
+                recordArr.append(prevRecord)
                 # return list of records
                 # print(recordArr[0])
-                return recordArr
+            return recordArr
         # if something wrong, return false
         print('selecting falied, key is not found or record is deleted')
         return False

@@ -26,17 +26,19 @@ class Database():
             # print(file)
             t_path = self.path + '/' + str(file) + '/' + str(file) + '.pkl'
             # print(t_path)
-
-            index_path = self.path + '/' + file + '/table_index.txt'
+  
             f = open(t_path, 'rb+')
             table = pickle.load(f)
             f.close()
-
-            indexObj = open(index_path, 'r+')
             table.index = Index(table)
             # obj.index.create_index(0)
-            for line in indexObj.readlines():
-                table.index.insert(0, int(line.split('+')[0]), line.split('+')[1][:-1])
+            for i in range(table.num_columns):
+                index_path = self.path + '/' + file + '/table_index_col' + str(i) + '.txt'
+                indexObj = open(index_path, 'r+')
+                for line in indexObj.readlines():
+                    line = line.split('_')
+                    for rid in line[1: -1]:
+                        table.index.insert(i, int(line[0]), rid)
             # self.tables_directory.append(obj)
             self.append_table(table)
             # print(len(self.tables_directory))
@@ -61,11 +63,15 @@ class Database():
                 dataFile.write(str(record) + '\n')
             dataFile.close()
             # store index
-            indexFileAddress = path + '/' + 'table_index.txt'
-            indexFile = open(indexFileAddress, 'w')
-            for node in table.index.indices[0].iteritems():
-                indexFile.write(str(node[0]) + '+' + str(node[1][0]) + '\n')
-            indexFile.close()
+            for i in range(table.num_columns):
+                indexFileAddress = path + '/' + 'table_index_col' + str(i) +'.txt'
+                indexFile = open(indexFileAddress, 'w')
+                for node in table.index.indices[i].iteritems():
+                    info = str(node[0]) + '_'
+                    for num in node[1]:
+                        info = info + num +'_'
+                    indexFile.write(info + '\n')
+                indexFile.close()
             # store table info
             f = open(path + '/' + table.name + '.pkl', 'wb')
             ### store page_range
