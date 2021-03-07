@@ -1,6 +1,6 @@
 from template.table import Table, Record
 from template.index import Index
-
+import threading
 class TransactionWorker:
 
     """
@@ -10,6 +10,7 @@ class TransactionWorker:
         self.stats = []
         self.transactions = transactions
         self.result = 0
+        self.threads = []
         pass
 
     """
@@ -25,5 +26,9 @@ class TransactionWorker:
         for transaction in self.transactions:
             # each transaction returns True if committed or False if aborted
             self.stats.append(transaction.run())
+            # thread = threading.Thread(target=func, args=args)
+            # self.threads.append(thread)
+            # thread.start()
         # stores the number of transactions that committed
         self.result = len(list(filter(lambda x: x, self.stats)))
+

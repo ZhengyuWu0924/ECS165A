@@ -10,6 +10,7 @@ class Page:
         self.has_cap = True
         self.page_key = page_key
         self.takenArr = []
+        self.lock_hash = []
 
     def has_capacity(self):
         if self.num_records < self.max_record_amount:
