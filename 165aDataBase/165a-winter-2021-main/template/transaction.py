@@ -8,6 +8,7 @@ class Transaction:
     """
     def __init__(self):
         self.queries = []
+
         pass
 
     """
@@ -36,3 +37,5 @@ class Transaction:
     def commit(self):
         # TODO: commit to database
         return True
+
+

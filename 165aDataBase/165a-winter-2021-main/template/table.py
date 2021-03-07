@@ -51,6 +51,8 @@ class Record:
         self.columns_ = columns
         self.tps = 0
         self.update_num = 0
+        self.s_lock = False
+        self.x_lock = False
     
     def get_meta(self):
         # print(datetime.fromtimestamp(self.timestamp))
