@@ -7,7 +7,7 @@ class Transaction:
     # Creates a transaction object.
     """
     def __init__(self):
-        self.queries = []
+        self.queries = [
         pass
 
     """
