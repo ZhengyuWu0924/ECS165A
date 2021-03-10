@@ -52,6 +52,7 @@ class Record:
         self.tps = 0
         self.update_num = 0
         self.lock_mode = LOCK_UNLOCK
+        self.lock_amt = 0
         # self.s_lock = False
         # self.x_lock = False
     
