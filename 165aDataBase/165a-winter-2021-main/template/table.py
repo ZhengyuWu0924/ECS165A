@@ -98,6 +98,7 @@ class Table:
         self.rif_trash = []
         self.merge_waiting_set = set() # storing rid which needs to be merged
         self.merge_times = 0
+        self.num_index = 0
 
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
@@ -214,11 +215,13 @@ class Table:
                         record.offset = prange_[0].b_page[-1].writeRecord(data[i])
                         record.page_pos = len(prange_[0].b_page) - 1
                         record.prange_pos = self.prange_num
+                        self.index.insert(i, data[i], record.rid)
                     else:
                         # prange = self.prange_directory.get(i)[-1]
                         # print(record.rid)
-                        prange_[0].b_page[-1].writeRecord(data[i]) 
-                    self.index.insert(i, data[i], record.rid)
+                        prange_[0].b_page[-1].writeRecord(data[i])
+                        if self.index.indices[i] is not None: 
+                            self.index.insert(i, data[i], record.rid)
                 else:
                     # print('pos',i,record.prange_pos,record.page_pos,meta_cols[i - self.num_columns])
                     # print(meta_cols[0])
@@ -250,13 +253,15 @@ class Table:
                             # print('done')
                             record.page_pos = len(prange_[0].b_page) - 1
                             record.prange_pos = self.prange_num
+                            self.index.insert(i, data[i], record.rid)
                         else:
                             # prange = self.prange_directory.get(i)[-1]
                             prange_ = self.buffer.get_(i, self.prange_num, 'in')
                             # prange_[0].isFull = True
                             # print('236',prange_[0].b_page[0].num_records)
                             prange_[0].b_page[-1].writeRecord(data[i])
-                        self.index.insert(i, data[i], record.rid)
+                            if self.index.indices[i] is not None:
+                                self.index.insert(i, data[i], record.rid)
                     else:
                         # prange =
                         # self.prange_directory.get(i)[record.prange_pos]
@@ -280,10 +285,12 @@ class Table:
                             record.offset = prange_[0].b_page[-1].writeRecord(data[i])
                             record.page_pos = len(prange_[0].b_page) - 1
                             record.prange_pos = self.prange_num
+                            self.index.insert(i, data[i], record.rid)
                         else:
                             # prange = self.prange_directory.get(i)[-1]
                             prange_[0].b_page[-1].writeRecord(data[i])
-                        self.index.insert(i, data[i], record.rid)
+                            if self.index.indices[i] is not None:
+                                self.index.insert(i, data[i], record.rid)
                     else:
                         # prange =
                         # self.prange_directory.get(i)[record.prange_pos]
@@ -366,12 +373,13 @@ class Table:
             if i < self.num_columns:
                 prev_data = self.get_data(prev_record.rid, i, prev_record.prange_pos, prev_record.page_pos, prev_record.offset)
                 if prev_data == '/' or prev_data == None:
-                    if data[i] != None:
+                    if data[i] != None and self.index.indices[i] is not None:
                         self.index.update(i, None, data[i], base_record.rid)
                     prev_data = None
                 else:
                     # print(i, prev_data, data[i])
-                    self.index.update(i, prev_data, data[i], base_record.rid)    
+                    if self.index.indices[i] is not None:
+                        self.index.update(i, prev_data, data[i], base_record.rid)    
                 # print('prev_data', prev_data)
                 # self.index.update(i, prev_data, data[i], base_record.rid)
                 data_ = data[i]
@@ -504,12 +512,11 @@ class Table:
                     cpy_page.updateRecord(cpy_base_record.offset, cpy_base_record.columns_[i])
                     prange_list[i][0].b_page[cpy_base_record.page_pos] = cpy_page
                 #update_tps
-                base_record.tps = tail_record.tps
+                cpy_base_record.tps = tail_record.tps
                 self.page_directory.update({rid: cpy_base_record})
                 self.merge_times += 1
                 print('done')
                 # self.merge_waiting_set.remove(rid)
-                time.sleep(2)
 
 
 

@@ -1,5 +1,6 @@
 from template.table import Table
 from template.index import Index
+from template.bufferpool import Bufferpool
 import os
 # import io
 import pickle
@@ -31,18 +32,19 @@ class Database():
             table = pickle.load(f)
             f.close()
             table.index = Index(table)
+            table.buffer = Bufferpool(table)
             # obj.index.create_index(0)
-            for i in range(table.num_columns):
+            for i in range(table.num_index):
                 index_path = self.path + '/' + file + '/table_index_col' + str(i) + '.txt'
                 indexObj = open(index_path, 'r+')
                 for line in indexObj.readlines():
                     line = line.split('_')
                     for rid in line[1: -1]:
                         table.index.insert(i, int(line[0]), rid)
+                indexObj.close()
             # self.tables_directory.append(obj)
             self.append_table(table)
             # print(len(self.tables_directory))
-            indexObj.close()
             self.num_table += 1
     """
     Not for MS1
@@ -63,15 +65,20 @@ class Database():
                 dataFile.write(str(record) + '\n')
             dataFile.close()
             # store index
-            for i in range(table.num_columns):
-                indexFileAddress = path + '/' + 'table_index_col' + str(i) +'.txt'
-                indexFile = open(indexFileAddress, 'w')
-                for node in table.index.indices[i].iteritems():
-                    info = str(node[0]) + '_'
-                    for num in node[1]:
-                        info = info + num +'_'
-                    indexFile.write(info + '\n')
-                indexFile.close()
+            cnt = 0
+            for i in range(len(table.index.indices)):
+                
+                if table.index.indices[i] is not None:
+                    cnt += 1
+                    indexFileAddress = path + '/' + 'table_index_col' + str(i) +'.txt'
+                    indexFile = open(indexFileAddress, 'w')
+                    for node in table.index.indices[i].iteritems():
+                        info = str(node[0]) + '_'
+                        for num in node[1]:
+                            info = info + num +'_'
+                        indexFile.write(info + '\n')
+                    indexFile.close()
+            table.num_index = cnt
             # store table info
             f = open(path + '/' + table.name + '.pkl', 'wb')
             ### store page_range
@@ -83,6 +90,7 @@ class Database():
             #         f_p.close()
             table.index = None
             table.buffer.cleanBin()
+            table.buffer = None
             # table.prange_directory = {}
             pickle.dump(table, f, True)
             self.drop_table(table.name)

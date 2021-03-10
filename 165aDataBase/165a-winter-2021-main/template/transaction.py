@@ -11,7 +11,7 @@ class Transaction:
     def __init__(self):
         self.queries = []
         self.table = None
-        self.log
+        self.log = None
 
     """
     # Adds the given query to this transaction

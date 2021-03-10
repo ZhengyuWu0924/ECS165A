@@ -89,7 +89,6 @@ class Bufferpool:
         disk_list = None
         if len(self.trash_bin) == MAX_PRANGE:
             # if next(iter(self.trash_bin))[0][0].prange_id == prg_pos:
-            self.sem += 1
             self.sem.acquire()
             disk_list = self.trash_bin.pop(next(iter(self.trash_bin)))
             self.write_to_disk(disk_list)
@@ -118,13 +117,11 @@ class Bufferpool:
     #     self.trash_prg_num_list.append(self.pool_prg_num_list.pop(0))
 
     def write_to_disk(self, prange_list):
-        self.sem += 1
         path = self.basic_path + 'Data'
         if not os.path.isdir(path):
             os.mkdir(path)
         f = open(path + '/prange' + '_' + str(prange_list[0][0].prange_id) + '.pkl', 'wb')
         pickle.dump(prange_list, f, True)
-        self.sem -= 1
         f.close()
 
     def read_from_disk(self, prg_pos):
@@ -149,6 +146,8 @@ class Bufferpool:
             self.write_to_disk(prange_list)
         for prange_list in self.trash_bin.values():
             self.write_to_disk(prange_list)
+        self.pool = {}
+        self.trash_bin = {}
         # whlie True:
             # process to clean the bin:
             # merge tail page and base page
