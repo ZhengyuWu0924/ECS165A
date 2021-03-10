@@ -3,6 +3,7 @@ from template.config import *
 import io
 import os
 import pickle
+import threading
 
 
 class Bufferpool:
@@ -18,6 +19,7 @@ class Bufferpool:
         self.cap = self.num_cols * MAX_PRANGE
         self.prange_num = 0
         self.load_pos = 0
+        self.sem = threading.Lock()
 
         """
         NOT SURE IF SHOULD BE PLACED IN __init__ OR SOMEWHERE ELSE
@@ -87,15 +89,16 @@ class Bufferpool:
         disk_list = None
         if len(self.trash_bin) == MAX_PRANGE:
             # if next(iter(self.trash_bin))[0][0].prange_id == prg_pos:
-            #     disk_list = 
+            self.sem += 1
+            self.sem.acquire()
             disk_list = self.trash_bin.pop(next(iter(self.trash_bin)))
             self.write_to_disk(disk_list)
+            self.sem.release()
         self.trash_bin[trash_list[0][0].prange_id] = trash_list
     
     def load_prange(self, prange):
         if prange == None:
             return
-
         if prange.prange_id in self.pool:
             self.pool[prange.prange_id].append([prange])
         else:
@@ -115,11 +118,13 @@ class Bufferpool:
     #     self.trash_prg_num_list.append(self.pool_prg_num_list.pop(0))
 
     def write_to_disk(self, prange_list):
+        self.sem += 1
         path = self.basic_path + 'Data'
         if not os.path.isdir(path):
             os.mkdir(path)
         f = open(path + '/prange' + '_' + str(prange_list[0][0].prange_id) + '.pkl', 'wb')
         pickle.dump(prange_list, f, True)
+        self.sem -= 1
         f.close()
 
     def read_from_disk(self, prg_pos):

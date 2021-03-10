@@ -14,7 +14,7 @@ class LockingCounter():
 
     def increment(self):
         with self.lock:
-        self.count += 1
+            self.count += 1
 
 
 

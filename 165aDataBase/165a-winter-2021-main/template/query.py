@@ -21,7 +21,7 @@ class Query:
     # Returns True upon succesful deletion
     # Return False if record doesn't exist or is locked due to 2PL
     """
-    def delete(self, key):
+    def delete(self, key, undo = False):
         data = [None, None, None, None, None]
         brid = self.table.index.locate(0, key)
         record = self.table.update_record(key, brid[0], *data, delete = True)
@@ -62,7 +62,7 @@ class Query:
     # Return True upon succesful insertion
     # Returns False if insert fails for whatever reason
     """
-    def insert(self, *columns):
+    def insert(self, *columns, undo = False):
         if columns == None:
             return False
         if self.table.insert_record(*columns) != False:
@@ -83,12 +83,12 @@ class Query:
     # Returns False if record locked by TPL
     # Assume that select will never be called on a key that doesn't exist
     """
-    def select(self, key, column, query_columns):
+    def select(self, key, column, query_columns, undo = False):
         recordArr = []
         # if key in self.table.page_directory:
             # get the base rid from table by bTree
         bTreeRIDs = self.table.index.locate(column, key)
-        # print(bTreeRIDs)
+        # print(column, key, bTreeRIDs)
         if isinstance(bTreeRIDs, list):    
             for baseRid in bTreeRIDs:
                 # base record, used later
@@ -135,7 +135,8 @@ class Query:
                 # print(recordArr[0])
             return recordArr
         # if something wrong, return false
-        print('selecting falied, key is not found or record is deleted')
+        # print(key)
+        # print('selecting falied, key is not found or record is deleted/updated')
         return False
         
 
@@ -145,7 +146,7 @@ class Query:
     # Returns False if no records exist with given key or if the target record cannot be accessed due to 2PL locking
     """
      # Ex:query.update(choice(keys), *(choice(update_cols)))
-    def update(self, key, *columns):
+    def update(self, key, *columns, undo = False):
       # Record_key or table_key ?
         # print(columns[0])
         bTreeRIDs = self.table.index.locate(0, key)
@@ -155,9 +156,12 @@ class Query:
             if self.table.update_record(key, bTreeRIDs[0], *columns, delete = False) != False:
                 return True
             else:
+                print('158 up failed')
                 return False
+        print('up failed')
         return False
-
+    
+    # def write(self, )
 
     """
     :param start_range: int         # Start of the key range to aggregate 

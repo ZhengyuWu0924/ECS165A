@@ -94,6 +94,7 @@ class Table:
         self.free_brid = 0
         self.free_trid = 0
         self.rid_list = []
+        self.key_list = []
         self.rif_trash = []
         self.merge_waiting_set = set() # storing rid which needs to be merged
         self.merge_times = 0
@@ -171,12 +172,16 @@ class Table:
 
     # To Do: inset record to index
     def insert_record(self, *data):
+        if data[0] in self.key_list:
+            return False
+        self.key_list.append(data[0])
         record = None 
         first = None
         rid = None
         prange_ = None
         meta_cols = []
         read = False
+        # print(data)
         # flag = False
         if len(self.buffer.pool) == 0:
             read = True
@@ -305,6 +310,7 @@ class Table:
     # if key does not exist then return false
     # To Do: update record to index
     def update_record(self, key, brid, *data, delete):
+        # print(data)
         if len(self.buffer.trash_bin) != 0:
             self.merge_start()
         # self.merge_times += 1
@@ -420,7 +426,7 @@ class Table:
         if delete == True:
             # self.rid_list.remove()
             return cur_record
-        return 0
+        return True
 
     def insert_page_to(self, ith_column):
         # prange = self.prange_directory.get(ith_column)[-1]

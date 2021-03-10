@@ -20,7 +20,6 @@ class Index:
     """
 
     def locate(self, column, value):
-
         try:
             return self.indices[column][value]
         except:
@@ -89,4 +88,4 @@ class Index:
     """
 
     def drop_index(self, column_number):
-        pass
+        self.indices[column_number] = None

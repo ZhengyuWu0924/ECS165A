@@ -1,21 +1,23 @@
 from template.transaction_worker import TransactionWorker
 from template.config import *
 class Log:
-    def __init__(self, transaction):
+    def __init__(self):
         # transactionNumber = [TransactionWorker1, 2, 3, 4 ... 8]
-        # information = [] // one record per line
-        # eg. information = [RID, Tn, [0,0,0,0,0]]
+        information = [] #info map
+        # eg. information = [Class Tn --- [[0,0,0,0,0], status]]
         # status = Start or Commit
-        self.status = LOG_START
+        # self.status = LOG_START
         
 
     def readLog(self):
         return True
     
     def writeLog(self):
+
         return True
     
     def rollBack(self):
+        return
 
 
 # functions:

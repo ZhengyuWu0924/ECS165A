@@ -37,7 +37,7 @@ for i in range(0, 1000):
     records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
     q = Query(grades_table)
     t = insert_transactions[i % num_threads]
-    t.add_query(q.insert, *records[key])
+    t.add_query(q.insert, *records[key], table=grades_table)
 
 # Commit to disk
 for i in range(num_threads):

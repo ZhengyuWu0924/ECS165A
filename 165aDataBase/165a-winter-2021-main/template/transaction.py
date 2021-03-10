@@ -1,5 +1,7 @@
 from template.table import Table, Record
 from template.index import Index
+from template.log import Log
+from template.config import *
 
 class Transaction:
 
@@ -7,8 +9,9 @@ class Transaction:
     # Creates a transaction object.
     """
     def __init__(self):
-        self.queries = [
-        pass
+        self.queries = []
+        self.table = None
+        self.log = Log()
 
     """
     # Adds the given query to this transaction
@@ -17,8 +20,11 @@ class Transaction:
     # t = Transaction()
     # t.add_query(q.update, 0, *[None, 1, None, 2, None])
     """
-    def add_query(self, query, *args):
+    def add_query(self, query, *args, table = None):
+        if table is not None:
+            self.table = table
         self.queries.append((query, args))
+        
 
     # If you choose to implement this differently this method must still return True if transaction commits or False on abort
     def run(self):
