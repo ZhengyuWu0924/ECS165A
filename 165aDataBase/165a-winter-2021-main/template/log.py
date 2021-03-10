@@ -8,7 +8,7 @@ class Log:
         # status = Start or Commit
         self.table = table
         self.args = args
-        self.information = []
+        self.information = {}
         # [key - {args0, status}{args1, status}]
         self.currentWorking = []
         self.logID = 0
@@ -27,35 +27,36 @@ class Log:
         return True
     
     def writeLog(self, *args):
-        key = args[0]
-        tempArgs = args[:1]
+        key = args[0][0]
+        tempArgs = args[0][1:]
         tempStatus = LOG_START
-        tempInfo = tempArgs + tempStatus
+        tempInfo = []
+        tempInfo.append(tempArgs)
+        tempInfo.append(tempStatus)
         if key in self.information:
             self.information[key].append(tempInfo)
-            
         else:
-            self.information.append(key)
-            self.information[key].append(tempInfo)
-            
+            self.information.update({key : tempInfo})
         return True
     
     def commitLog(self, *args):
-        key = args[0]
-        tempArgs = args[:1]
+        key = args[0][0]
+        tempArgs = args[0][1:]
         tempStatus = LOG_COMMIT
-        tempInfo = tempArgs + tempStatus
+        tempInfo = []
+        tempInfo.append(tempArgs)
+        tempInfo.append(tempStatus)
         if key in self.information:
             self.information[key].append(tempInfo)
-            
         else:
-            self.information.append(key)
-            self.information[key].append(tempInfo)
+            self.information.update({key : tempInfo})
             
         return True
     
-    def rollBack(self):
-        key = self.currentWorking[0]
+    def rollBack(self, *args):
+        if len(self.currentWorking) == 0:
+            return
+        key = args[0]
         if key not in self.information:
             return
         self.currentWorking.remove(key)
