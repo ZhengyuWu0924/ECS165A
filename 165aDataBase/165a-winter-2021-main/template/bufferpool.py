@@ -19,7 +19,7 @@ class Bufferpool:
         self.cap = self.num_cols * MAX_PRANGE
         self.prange_num = 0
         self.load_pos = 0
-        self.sem = threading.Lock()
+        self.sem = threading.RLock()
 
         """
         NOT SURE IF SHOULD BE PLACED IN __init__ OR SOMEWHERE ELSE

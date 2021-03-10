@@ -23,6 +23,10 @@ class TransactionWorker:
     Runs a transaction
     """
     def run(self):
+        thread = threading.Thread(target=self.run_)
+        thread.start()
+    
+    def run_(self):
         for transaction in self.transactions:
             # each transaction returns True if committed or False if aborted
             self.stats.append(transaction.run())
@@ -31,4 +35,5 @@ class TransactionWorker:
             # thread.start()
         # stores the number of transactions that committed
         self.result = len(list(filter(lambda x: x, self.stats)))
+
 
