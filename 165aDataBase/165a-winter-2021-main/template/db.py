@@ -2,6 +2,7 @@ from template.table import Table
 from template.index import Index
 from template.bufferpool import Bufferpool
 import os
+import threading
 # import io
 import pickle
 
@@ -33,6 +34,7 @@ class Database():
             f.close()
             table.index = Index(table)
             table.buffer = Bufferpool(table)
+            table.sem = threading.RLock()
             # obj.index.create_index(0)
             for i in range(table.num_index):
                 index_path = self.path + '/' + file + '/table_index_col' + str(i) + '.txt'
@@ -91,6 +93,7 @@ class Database():
             table.index = None
             table.buffer.cleanBin()
             table.buffer = None
+            table.sem = None
             # table.prange_directory = {}
             pickle.dump(table, f, True)
             self.drop_table(table.name)

@@ -51,8 +51,9 @@ class Record:
         self.columns_ = columns
         self.tps = 0
         self.update_num = 0
-        self.s_lock = False
-        self.x_lock = False
+        self.lock_mode = LOCK_UNLOCK
+        # self.s_lock = False
+        # self.x_lock = False
     
     def get_meta(self):
         # print(datetime.fromtimestamp(self.timestamp))
@@ -86,19 +87,20 @@ class Table:
         self.num_columns = num_columns
         # self.prange_directory = {}  #'col_num': 'page_range_list'
         self.page_directory = {}    #'RID': 'record obj'
-        self.origin_base_page_memory = [] # original unmerged and 
-        self.after_merge_base_page_memory = {} # the new copy that is being merged
+        self.origin_base_page_memory = [] # original unmerged and idk??? 
+        self.after_merge_base_page_memory = {} # the new copy that is being  merged,idk???
         self.buffer = Bufferpool(self)
         self.index = Index(self)
         self.prange_num = 0
         self.free_brid = 0
         self.free_trid = 0
         self.rid_list = []
-        self.key_list = []
-        self.rif_trash = []
+        self.key_list = set()
+        self.rif_trash = [] #?????idk
         self.merge_waiting_set = set() # storing rid which needs to be merged
         self.merge_times = 0
         self.num_index = 0
+        self.sem = threading.RLock()
 
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
@@ -173,9 +175,11 @@ class Table:
 
     # To Do: inset record to index
     def insert_record(self, *data):
+        self.sem.acquire()
         if data[0] in self.key_list:
+            self.sem.release()
             return False
-        self.key_list.append(data[0])
+        self.key_list.add(data[0])
         record = None 
         first = None
         rid = None
@@ -207,6 +211,7 @@ class Table:
                         rid = self.next_free_rid(0)
                         if rid == None:
                             # print('line 174 error: rid cannot be None')
+                            self.sem.release()
                             return -1
                         record = self.create_record(rid, rid, data[i], data, first)
                         meta_cols = record.get_meta()
@@ -295,7 +300,8 @@ class Table:
                         # prange =
                         # self.prange_directory.get(i)[record.prange_pos]
                         # print('265',prange_[0].b_page[-1].num_records, 'page_pos', record.page_pos)
-                        prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])  
+                        prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])
+        self.sem.release()
         return True
 
     def checkSchema(self, record, data):
@@ -325,10 +331,12 @@ class Table:
         if key == None:
             print('empty key')
         data = list(data)
-        rid = self.next_free_rid(1)
-        # print(rid)
         base_record = self.page_directory.get(brid)
+        if base_record.x_lock > 0:
+            return False
         base_record.update_num += 1
+        rid = self.next_free_rid(1)
+        
         ##print("update type = ", type(base_record))
         # if base_record.indirect == None:
         #     print('got none indirect', key)
@@ -355,16 +363,12 @@ class Table:
         base_record.schema = schema
         brecord_meta = base_record.get_meta()
 
-        # self.prange_directory.get(self.num_columns +
-        # INDIRECTION_COLUMN)[base_record.prange_pos].b_page[base_record.page_pos].updateRecord(base_record.offset,
-        # brecord_meta[INDIRECTION_COLUMN])
+        self.sem.acquire()
         self.buffer.get_(self.num_columns + INDIRECTION_COLUMN, base_record.prange_pos, 'up')[0].b_page[base_record.page_pos].updateRecord(base_record.offset,
         brecord_meta[INDIRECTION_COLUMN])
         
-        # self.prange_directory.get(self.num_columns +
-        # SCHEMA_ENCODING_COLUMN)[base_record.prange_pos].b_page[base_record.page_pos].updateRecord(base_record.offset,
-        # schema)
         self.buffer.get_(self.num_columns + SCHEMA_ENCODING_COLUMN, base_record.prange_pos, 'up')[0].b_page[base_record.page_pos].updateRecord(base_record.offset, schema)
+        self.sem.release()
 
         cur_record.indirect = prev_record.rid
         self.page_directory.update({cur_record.rid: cur_record})
@@ -455,8 +459,10 @@ class Table:
             # page =
             # self.prange_directory.get(ith_col)[prange_pos].b_page[page_pos]
             page = self.buffer.get_(ith_col, prange_pos,'up')[0].b_page[page_pos]
+            page.pin = True
             return page.readRecord(offset)
         page = self.buffer.get_(ith_col, prange_pos,'up')[0].t_page[page_pos]
+        page.pin = True
         # page = self.prange_directory.get(ith_col)[prange_pos].t_page[page_pos]
         # print(page.readRecord(offset))
         return page.readRecord(offset)
