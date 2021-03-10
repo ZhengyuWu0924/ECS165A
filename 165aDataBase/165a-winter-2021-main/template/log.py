@@ -1,22 +1,70 @@
 from template.transaction_worker import TransactionWorker
 from template.config import *
 class Log:
-    def __init__(self):
+    def __init__(self, table, *args):
         # transactionNumber = [TransactionWorker1, 2, 3, 4 ... 8]
-        information = [] #info map
+        # self.information = [] #info map
         # eg. information = [Class Tn --- [[0,0,0,0,0], status]]
         # status = Start or Commit
-        # self.status = LOG_START
-        
+        self.table = table
+        self.args = args
+        self.information = []
+        # [key - {args0, status}{args1, status}]
+        self.currentWorking = []
+        self.logID = 0
 
-    def readLog(self):
+    def readLog(self, *args):
+        key = args[0]
+        tempInfo = []
+        if key not in self.information:
+            return
+        for i in range(len(self.information[key]), 0, -1):
+            if self.information[key][i].status is LOG_COMMIT:
+                tempInfo.append(self.information[key][i])
+                break
+        self.currentWorking.append(key)
+        self.currentWorking[key].append(tempInfo)
         return True
     
-    def writeLog(self):
-
+    def writeLog(self, *args):
+        key = args[0]
+        tempArgs = args[:1]
+        tempStatus = LOG_START
+        tempInfo = tempArgs + tempStatus
+        if key in self.information:
+            self.information[key].append(tempInfo)
+            
+        else:
+            self.information.append(key)
+            self.information[key].append(tempInfo)
+            
+        return True
+    
+    def commitLog(self, *args):
+        key = args[0]
+        tempArgs = args[:1]
+        tempStatus = LOG_COMMIT
+        tempInfo = tempArgs + tempStatus
+        if key in self.information:
+            self.information[key].append(tempInfo)
+            
+        else:
+            self.information.append(key)
+            self.information[key].append(tempInfo)
+            
         return True
     
     def rollBack(self):
+        key = self.currentWorking[0]
+        if key not in self.information:
+            return
+        self.currentWorking.remove(key)
+        for i in range(len(self.information[key]), 0, -1):
+            if self.information[key][i].status is LOG_COMMIT:
+                break
+            else:
+                self.information[key].remove(i)
+        
         return
 
 

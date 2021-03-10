@@ -11,7 +11,7 @@ class Transaction:
     def __init__(self):
         self.queries = []
         self.table = None
-        self.log = Log()
+        self.log
 
     """
     # Adds the given query to this transaction
@@ -21,10 +21,13 @@ class Transaction:
     # t.add_query(q.update, 0, *[None, 1, None, 2, None])
     """
     def add_query(self, query, *args, table = None):
+        tempTable = self.table
         if table is not None:
             self.table = table
+            
         self.queries.append((query, args))
-        
+        tempTable = self.table
+        self.log = Log(table, args)
 
     # If you choose to implement this differently this method must still return True if transaction commits or False on abort
     def run(self):
@@ -37,7 +40,7 @@ class Transaction:
 
     def abort(self):
         #TODO: do roll-back and any other necessary operations
-        # 
+        self.log.rollBack()
         return False
 
     def commit(self):
