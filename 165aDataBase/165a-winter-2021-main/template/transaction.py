@@ -33,22 +33,25 @@ class Transaction:
     def run(self):
         for query, args in self.queries:
             result = query(*args)
+            self.log.writeLog(args)
             # If the query has failed the transaction should abort
             if result == False:
-                return self.abort(*args)
-        return self.commit(*args)
+                return self.abort(args)
+        return self.commit()
 
     def abort(self, *args):
         #TODO: do roll-back and any other necessary operations
         self.log.rollBack(args)
         return False
 
-    def commit(self, *args):
+    def commit(self):
         # TODO: commit to database
         # call write-to-database function
         # if write to database sucessful 
         # then change state from "Start" to "Commit".
-        self.log.commitLog(args)
+        for _, args in self.queries:
+            self.log.commitLog(args)
+        
         return True
 
 
