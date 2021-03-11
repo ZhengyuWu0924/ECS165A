@@ -7,24 +7,26 @@ class Lock:
         self.mutex = LOCK_MUTEX
         self.shared = LOCK_SHARED
 
-    def addLock(self, mode, ):
+    def addLock(self, mode, *record):
         # detect mutex or shared
         return
-    def mutexLock():
+    def _mutexLock(self, *record):
         # add mutex lock
         return
-    def sharedLock():
+    def _sharedLock(self, *record):
         # add shared lock
         return
-    def releaseMutexLock():
+    def releaseLock(self, mode, *record):
+        return
+    def _releaseMutexLock(self, *record):
         # release record mutex lock 
         return
-    def releaseSharedLock():
+    def _releaseSharedLock(self, *record):
         # release recird mutex lock
         return
     # @param: operation mode
     # @param: record
-    def check():
+    def check(self, *record):
         # detect if any lock
         # return if able to update / read the record
         return
