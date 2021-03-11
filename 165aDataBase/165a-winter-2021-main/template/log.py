@@ -41,6 +41,8 @@ class Log:
     
     def commitLog(self, *args):
         key = args[0][0]
+        # print(key)
+        # print('\n')
         tempArgs = args[0][1:]
         tempStatus = LOG_COMMIT
         tempInfo = []

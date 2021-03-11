@@ -156,7 +156,7 @@ class Query:
             if self.table.update_record(key, bTreeRIDs[0], *columns, delete = False) != False:
                 return True
             else:
-                print('158 up failed')
+                # print('158 up failed')
                 return False
         print('up failed')
         return False

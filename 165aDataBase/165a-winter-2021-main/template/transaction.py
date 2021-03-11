@@ -2,6 +2,7 @@ from template.table import Table, Record
 from template.index import Index
 from template.log import Log
 from template.config import *
+import threading
 
 class Transaction:
 
@@ -12,6 +13,7 @@ class Transaction:
         self.queries = []
         self.table = None
         self.log = None
+        self.sem = threading.RLock()
 
     """
     # Adds the given query to this transaction
@@ -35,7 +37,9 @@ class Transaction:
             result = query(*args)
             self.log.writeLog(args)
             # If the query has failed the transaction should abort
+            # print(result)
             if result == False:
+                # print('aborting')
                 return self.abort(args)
         return self.commit()
 
@@ -49,9 +53,12 @@ class Transaction:
         # call write-to-database function
         # if write to database sucessful 
         # then change state from "Start" to "Commit".
+        # self.sem.acquire()
         for _, args in self.queries:
+            # print(threading.currentThread())
             # print(self.table.rid_list)
             self.log.commitLog(args)
+        # self.sem.release()
         
         return True
 

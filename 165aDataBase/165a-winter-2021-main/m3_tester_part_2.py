@@ -3,6 +3,7 @@ from template.query import Query
 from template.transaction import Transaction
 from template.transaction_worker import TransactionWorker
 from template.config import init
+import threading
 
 from random import choice, randint, sample, seed
 
@@ -38,7 +39,7 @@ for i in range(num_threads):
     transaction_workers[i].add_transaction(update_transactions[i])
 worker_keys = [ {} for t in transaction_workers ]
 
-for i in range(0, 100):
+for i in range(0, 1000):
     key = 92106429 + i
     keys.append(key)
     i = i % num_threads
@@ -87,6 +88,11 @@ for transaction_worker in transaction_workers:
     # print(i)
     # i += 1
     transaction_worker.run()
+
+for thread in threading.enumerate():
+    # thread.should_abort_immediately = True
+    if thread is not threading.main_thread():
+        thread.join()
 
 score = len(keys)
 for key in keys:

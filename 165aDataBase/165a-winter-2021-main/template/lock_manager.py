@@ -75,7 +75,7 @@ class Lock:
     # @param: record
     def check(self, mode, record):
         if mode == LOCK_MUTEX:
-            if record[0].lock_mode == LOCK_UNLOCK and record[0].amt == 0:
+            if record[0].lock_mode == LOCK_UNLOCK and record[0].lock_amt == 0:
                 return True
             
         if mode == LOCK_SHARED:

@@ -306,6 +306,7 @@ class Table:
                         # self.prange_directory.get(i)[record.prange_pos]
                         # print('265',prange_[0].b_page[-1].num_records, 'page_pos', record.page_pos)
                         prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])
+        Lock().releaseLock(LOCK_MUTEX, [record])
         self.sem.release()
         return True
 
@@ -352,6 +353,7 @@ class Table:
         #     return 
         if base_record == None:
             print('record doesnt exist')
+            Lock().releaseLock(LOCK_MUTEX, [base_record])
             self.sem.release()
             return False
         # get current prange position
@@ -359,6 +361,7 @@ class Table:
         prev_record = self.page_directory.get(base_record.indirect)
         if prev_record.rid == None:
             print('None prev_record')
+            Lock().releaseLock(LOCK_MUTEX, [base_record])
             self.sem.release()
             return False
         if delete == True:
@@ -448,8 +451,10 @@ class Table:
         self.addtps(brid,base_record.update_num)
         if delete == True:
             # self.rid_list.remove()
+            Lock().releaseLock(LOCK_MUTEX, [base_record])
             self.sem.release()
             return cur_record
+        Lock().releaseLock(LOCK_MUTEX, [base_record])
         self.sem.release()
         return True
 
@@ -513,6 +518,7 @@ class Table:
                 data = page.readRecord(offset)
                 # print(data)
                 res.append(data)
+        Lock().releaseLock(LOCK_SHARED, [record])
         self.sem.release()
         return res
 
