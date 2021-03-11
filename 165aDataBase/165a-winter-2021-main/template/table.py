@@ -1,6 +1,7 @@
 from template.page import *
 from template.index import Index
 from template.bufferpool import Bufferpool
+from template.lock_manager import Lock
 from template.config import *
 from time import time
 from datetime import datetime
@@ -215,6 +216,7 @@ class Table:
                             self.sem.release()
                             return -1
                         record = self.create_record(rid, rid, data[i], data, first)
+                        Lock().addLock(LOCK_MUTEX, [record])
                         meta_cols = record.get_meta()
                         # print(meta_cols)
                         # prange = self.prange_directory.get(i)[-1]
@@ -248,6 +250,7 @@ class Table:
                         if first == True:
                             rid = self.next_free_rid(0)
                             record = self.create_record(rid, rid, data[i], data, first)
+                            Lock().addLock(LOCK_MUTEX, [record])
                             meta_cols = record.get_meta()
                             # prange = self.prange_directory.get(i)[-1]
                             # print(self.prange_num)
@@ -285,6 +288,7 @@ class Table:
                         if first == True:
                             rid = self.next_free_rid(0)
                             record = self.create_record(rid, rid, data[i], data, first)
+                            Lock().addLock(LOCK_MUTEX, [record])
                             meta_cols = record.get_meta()
                             # prange = self.prange_directory.get(i)[-1]
                             # print('252',prange_[0].b_page[-1].num_records)
@@ -332,9 +336,13 @@ class Table:
         if key == None:
             print('empty key')
         data = list(data)
+        self.sem.acquire()
         base_record = self.page_directory.get(brid)
-        if base_record.x_lock > 0:
+        if Lock().check(LOCK_MUTEX, [base_record]) == False:
+            self.sem.release()
             return False
+        else:
+            Lock().addLock(LOCK_MUTEX, [base_record])
         base_record.update_num += 1
         rid = self.next_free_rid(1)
         
@@ -344,13 +352,15 @@ class Table:
         #     return 
         if base_record == None:
             print('record doesnt exist')
+            self.sem.release()
             return False
         # get current prange position
         cur_prange_pos = base_record.prange_pos
         prev_record = self.page_directory.get(base_record.indirect)
         if prev_record.rid == None:
             print('None prev_record')
-            return
+            self.sem.release()
+            return False
         if delete == True:
             schema = int('1' * self.num_columns)
         else:
@@ -438,7 +448,9 @@ class Table:
         self.addtps(brid,base_record.update_num)
         if delete == True:
             # self.rid_list.remove()
+            self.sem.release()
             return cur_record
+        self.sem.release()
         return True
 
     def insert_page_to(self, ith_column):
@@ -472,6 +484,10 @@ class Table:
         record = self.page_directory.get(key)
         if record == None:
             print('The key doesnt exist or empty key')
+        if Lock().check(LOCK_SHARED, [record]) == False:
+            return False
+        else:
+            Lock().addLock(LOCK_SHARED, [record])
         rid = record.indirect
         # print(rid)
         record = self.page_directory.get(rid)
@@ -480,6 +496,7 @@ class Table:
         prange_pos = record.prange_pos
         # print('record info', page_pos, prange_pos, offset)
         res = []
+        self.sem.acquire()
         for i in range(self.num_columns + META_DATA_COL_NUM):
             if rid[0] == 'b':
                 # page =
@@ -496,6 +513,7 @@ class Table:
                 data = page.readRecord(offset)
                 # print(data)
                 res.append(data)
+        self.sem.release()
         return res
 
     def merge(self):

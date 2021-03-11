@@ -1,5 +1,5 @@
 from template.config import *
-from template.table import Record
+# from template.table import Record
 
 class Lock:
     def __init__(self):
@@ -7,7 +7,7 @@ class Lock:
         self.mutex = LOCK_MUTEX
         self.shared = LOCK_SHARED
 
-    def addLock(self, mode, *record):
+    def addLock(self, mode, record):
         # detect mutex or shared
         status = False
         if len(record) == 0:
@@ -73,7 +73,7 @@ class Lock:
     # func: detect if any lock
     # @param: operation mode
     # @param: record
-    def check(self, mode, *record):
+    def check(self, mode, record):
         if mode == LOCK_MUTEX:
             if record[0].lock_mode == LOCK_UNLOCK and record[0].amt == 0:
                 return True

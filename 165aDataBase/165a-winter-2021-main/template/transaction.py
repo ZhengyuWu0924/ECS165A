@@ -50,6 +50,7 @@ class Transaction:
         # if write to database sucessful 
         # then change state from "Start" to "Commit".
         for _, args in self.queries:
+            # print(self.table.rid_list)
             self.log.commitLog(args)
         
         return True
