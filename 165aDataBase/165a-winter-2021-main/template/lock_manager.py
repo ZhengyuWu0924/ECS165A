@@ -1,10 +1,13 @@
-from config import *
+from template.config import *
 from template.table import Record
 
 class Lock:
-    def __init__(self, mode, *record):
+    def __init__(self):
+        self.unlock = LOCK_UNLOCK
+        self.mutex = LOCK_MUTEX_LOCK
+        self.shared = LOCK_SAHED_LOCK
 
-    def addLock():
+    def addLock(self, mode, ):
         # detect mutex or shared
         return
     def mutexLock():
