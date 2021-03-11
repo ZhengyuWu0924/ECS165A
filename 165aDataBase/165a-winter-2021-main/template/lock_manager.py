@@ -4,8 +4,8 @@ from template.table import Record
 class Lock:
     def __init__(self):
         self.unlock = LOCK_UNLOCK
-        self.mutex = LOCK_MUTEX_LOCK
-        self.shared = LOCK_SAHED_LOCK
+        self.mutex = LOCK_MUTEX
+        self.shared = LOCK_SHARED
 
     def addLock(self, mode, ):
         # detect mutex or shared
