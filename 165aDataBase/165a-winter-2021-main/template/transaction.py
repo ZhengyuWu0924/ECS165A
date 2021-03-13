@@ -23,13 +23,11 @@ class Transaction:
     # t.add_query(q.update, 0, *[None, 1, None, 2, None])
     """
     def add_query(self, query, *args, table = None):
-        tempTable = self.table
-        if table is not None:
+        if self.table is None and table is not None:
             self.table = table
         # if len(args)==3 and isinstance(args[2], list):
         #     print('selecting')   
         self.queries.append((query, args))
-        tempTable = self.table
         self.log = Log(table, args)
 
     # If you choose to implement this differently this method must still return True if transaction commits or False on abort
@@ -40,7 +38,9 @@ class Transaction:
             # If the query has failed the transaction should abort
             # print(result)
             if result == False:
-                # print('aborting')
+                self.sem.acquire()
+                print('---aborting', query, args,'----')
+                self.sem.release()
                 return self.abort(args)
         return self.commit()
 

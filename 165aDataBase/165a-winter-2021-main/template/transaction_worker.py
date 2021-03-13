@@ -24,7 +24,7 @@ class TransactionWorker:
     """
     def run(self):
         thread = threading.Thread(target=self.run_)
-        thread.start()
+        thread.run()
         # thread.join()
     
     def run_(self):

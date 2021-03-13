@@ -81,6 +81,7 @@ class Lock:
     # @param: record
     def check(self, mode, record):
         # print(threading.get_ident())
+        thread = None
         if threading.current_thread() is not threading.main_thread():
             thread = threading.get_ident()
         if mode == LOCK_MUTEX:
