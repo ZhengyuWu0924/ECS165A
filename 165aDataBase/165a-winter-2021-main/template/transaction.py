@@ -26,7 +26,8 @@ class Transaction:
         tempTable = self.table
         if table is not None:
             self.table = table
-            
+        # if len(args)==3 and isinstance(args[2], list):
+        #     print('selecting')   
         self.queries.append((query, args))
         tempTable = self.table
         self.log = Log(table, args)
@@ -43,16 +44,13 @@ class Transaction:
                 return self.abort(args)
         return self.commit()
 
-    def abort(self, *args):
+    def abort(self, args):
         #TODO: do roll-back and any other necessary operations
+        # print(args)
         self.log.rollBack(args)
         return False
 
     def commit(self):
-        # TODO: commit to database
-        # call write-to-database function
-        # if write to database sucessful 
-        # then change state from "Start" to "Commit".
         # self.sem.acquire()
         for _, args in self.queries:
             # print(threading.currentThread())

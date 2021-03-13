@@ -21,7 +21,7 @@ class Query:
     # Returns True upon succesful deletion
     # Return False if record doesn't exist or is locked due to 2PL
     """
-    def delete(self, key, undo = False):
+    def delete(self, key, undo = False, id = None):
         data = [None, None, None, None, None]
         brid = self.table.index.locate(0, key)
         record = self.table.update_record(key, brid[0], *data, delete = True)
@@ -31,38 +31,13 @@ class Query:
             return True
         print('fail deletion')
         return False
-        # If record exist in table
-        # Delete in both table and bTree
-        # if key in self.table.page_directory:
-        #     # Delete 2 base records in table
-        #     baseRecord = self.table.page_directory.pop(key, None)
-        #     self.table.page_directory.pop(baseRecord.rid, None)
-            
-        #     # If no tail records
-        #     if baseRecord.indirect != baseRecord.rid:
-        #         newestTemp = self.table.read_record(baseRecord.indirect)
-        #         baseRecord.columns_ = newestTemp
-            
-        #     # Delete value in each column
-        #     for index in range(len(baseRecord.columns)):
-        #         deleteVal = None
-        #         if baseRecord.columns[index] == '/' or baseRecord.columns[index] is None:
-        #             deleteVal = -MAX_LONGINT
-        #         deleteVal = baseRecord.columns_[index]
-        #         self.table.index.delete(index, deleteVal, baseRecord.rid)
-        #     # Successful delete
-        #     return True
-        # # If record doesn't exist
-        # return False
-       
-        #pass
 
     """
     # Insert a record with specified columns
     # Return True upon succesful insertion
     # Returns False if insert fails for whatever reason
     """
-    def insert(self, *columns, undo = False):
+    def insert(self, *columns, undo = False, id = None):
         if columns == None:
             return False
         if self.table.insert_record(*columns) != False:
@@ -83,7 +58,7 @@ class Query:
     # Returns False if record locked by TPL
     # Assume that select will never be called on a key that doesn't exist
     """
-    def select(self, key, column, query_columns, undo = False):
+    def select(self, key, column, query_columns, undo = False, id = None):
         recordArr = []
         # if key in self.table.page_directory:
             # get the base rid from table by bTree
@@ -112,31 +87,9 @@ class Query:
                 # travel reverse to form the logbook 
                 prevRecord = self.table.page_directory.get(ridRecord.indirect)
                 prevIndirect = prevRecord.indirect
-                # whlie there is not a circle
-                # while prevIndirect != circleFlag:
-                #     # add reacord to the front of the log book
-                #     currentRecord = prevRecord
-                #     prevRecord = self.table.page_directory.get(currentRecord.indirect)
-                #     recordArr.insert(len(recordArr), currentRecord)
-                #     prevIndirect = prevRecord.indirect
-                # circle found
-                # add base record to the front
-                # base_record = []
-                # for index in range(len(query_columns)):
-                #     # if query_columns[index] == 1:
-                #     #     base_record.insert(len(base_record),
-                #     #                     ridRecord.columns[index])
-                #     if query_columns[index] == 1:
-                #         base_record.insert(len(base_record),
-                #                         ridRecord)
-                # recordArr.insert(len(recordArr), ridRecord)
+
                 recordArr.append(prevRecord)
-                # return list of records
-                # print(recordArr[0])
             return recordArr
-        # if something wrong, return false
-        # print(key)
-        # print('selecting falied, key is not found or record is deleted/updated')
         return False
         
 
@@ -146,7 +99,7 @@ class Query:
     # Returns False if no records exist with given key or if the target record cannot be accessed due to 2PL locking
     """
      # Ex:query.update(choice(keys), *(choice(update_cols)))
-    def update(self, key, *columns, undo = False):
+    def update(self, key, *columns, undo = False, id = None):
       # Record_key or table_key ?
         # print(columns[0])
         bTreeRIDs = self.table.index.locate(0, key)
@@ -158,10 +111,9 @@ class Query:
             else:
                 # print('158 up failed')
                 return False
-        print('up failed')
+        # print('up failed')
         return False
     
-    # def write(self, )
 
     """
     :param start_range: int         # Start of the key range to aggregate 

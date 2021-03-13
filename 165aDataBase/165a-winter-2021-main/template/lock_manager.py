@@ -1,4 +1,5 @@
 from template.config import *
+import threading
 # from template.table import Record
 
 class Lock:
@@ -16,6 +17,8 @@ class Lock:
             status = self._mutexLock(record[0])
         if mode == LOCK_SHARED:
             status = self._sharedLock(record[0])
+        if threading.current_thread() is not threading.main_thread():
+            record[0].locker = threading.get_ident()
         return status
     
     # func: add mutex lock 
@@ -42,12 +45,15 @@ class Lock:
     # func: release a lock 
     def releaseLock(self, mode, record):
         status = False
-        if len(record) == 0:
+        # print(record)
+        if len(record) == 0 or record[0] == None:
             return status
         if mode == LOCK_MUTEX:
             status = self._releaseMutexLock(record[0])
         elif mode == LOCK_SHARED:
             status = self._releaseSharedLock(record[0])
+        if threading.current_thread() is not threading.main_thread():
+            record[0].locker = None            
         return status
     
     # func: release mutex lock for a record
@@ -74,9 +80,14 @@ class Lock:
     # @param: operation mode
     # @param: record
     def check(self, mode, record):
+        # print(threading.get_ident())
+        if threading.current_thread() is not threading.main_thread():
+            thread = threading.get_ident()
         if mode == LOCK_MUTEX:
             if record[0].lock_mode == LOCK_UNLOCK and record[0].lock_amt == 0:
                 return True
+            if record[0].locker == thread:
+                return 'pass'
             
         if mode == LOCK_SHARED:
             if record[0].lock_mode != LOCK_MUTEX:

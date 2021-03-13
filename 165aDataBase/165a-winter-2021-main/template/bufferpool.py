@@ -13,7 +13,7 @@ class Bufferpool:
         # self.pool = [[],[],[]]
         # LRU cache
         self.pool = {}
-        self.trash_bin = {}
+        self.buffer_bin = {}
         self.merge_waiting_set = set() # storing updated rid of record
         self.num_cols = table.num_columns + META_DATA_COL_NUM
         self.cap = self.num_cols * MAX_PRANGE
@@ -54,7 +54,7 @@ class Bufferpool:
         elif prg_pos in self.trash_bin:
             # index = self.trash_prg_num_list.index(prg_pos)
             # print('trash index', index)
-            prange_list = self.trash_bin.pop(prg_pos)
+            prange_list = self.buffer_bin.pop(prg_pos)
             trash_list = self.pool.pop(next(iter(self.pool)))
             self.trash_bin[trash_list[0][0].prange_id] = trash_list
             self.pool[prg_pos] = prange_list
@@ -77,20 +77,20 @@ class Bufferpool:
     #         self.pool[index][col] = prange
 
     def findTrash(self, prg_pos):
-        if len(self.trash_bin) == 0:
+        if len(self.buffer_bin) == 0:
             return -1
         if prg_pos in self.trash_bin:
             print('found')
-            return self.trash_bin[prg_pos]
+            return self.buffer_bin[prg_pos]
         # print(self.trash_bin)
         return -1
 
     def move_to_trash(self, trash_list):
         disk_list = None
-        if len(self.trash_bin) == MAX_PRANGE:
+        if len(self.buffer_bin) == MAX_PRANGE:
             # if next(iter(self.trash_bin))[0][0].prange_id == prg_pos:
             self.sem.acquire()
-            disk_list = self.trash_bin.pop(next(iter(self.trash_bin)))
+            disk_list = self.buffer_bin.pop(next(iter(self.buffer_bin)))
             self.write_to_disk(disk_list)
             self.sem.release()
         self.trash_bin[trash_list[0][0].prange_id] = trash_list
@@ -144,10 +144,10 @@ class Bufferpool:
     def cleanBin(self):
         for prange_list in self.pool.values():
             self.write_to_disk(prange_list)
-        for prange_list in self.trash_bin.values():
+        for prange_list in self.buffer_bin.values():
             self.write_to_disk(prange_list)
         self.pool = {}
-        self.trash_bin = {}
+        self.buffer_bin = {}
         # whlie True:
             # process to clean the bin:
             # merge tail page and base page

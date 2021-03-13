@@ -48,6 +48,7 @@ for i in range(0, 1000):
     q = Query(grades_table)
     # print(insert_transactions[i])
     insert_transactions[i].add_query(q.insert, *records[key], table=grades_table)
+    # print('insert to ', i, key)
     worker_keys[i][key] = True
 
 t = 0
@@ -69,6 +70,7 @@ for c in range(grades_table.num_columns):
             # print(c)
             query = Query(grades_table)
             select_transactions[t % num_threads].add_query(query.select, key, c, [1, 1, 1, 1, 1],table=grades_table)
+            # print('select to ', t % num_threads, key)
         t += 1
 
 for j in range(0, num_threads):
@@ -80,6 +82,7 @@ for j in range(0, num_threads):
             records[key][i] = value
             query = Query(grades_table)
             update_transactions[j].add_query(query.update, key, *updated_columns,table=grades_table)
+            # print('update to ', j, key)
             # print(updated_columns)
             # print(records[key])
             updated_columns = [None, None, None, None, None]
@@ -90,7 +93,6 @@ for transaction_worker in transaction_workers:
     transaction_worker.run()
 
 for thread in threading.enumerate():
-    # thread.should_abort_immediately = True
     if thread is not threading.main_thread():
         thread.join()
 
@@ -103,7 +105,7 @@ for key in keys:
     result = query.select(key, 0, [1, 1, 1, 1, 1])[0].columns
     # print(result)
     if correct != result:
-        # print('select error on primary key', key, ':', result, ', correct:', correct)
+        print('select error on primary key', key, ':', result, ', correct:', correct)
         score -= 1
 print('Score', score, '/', len(keys))
 # print(grades_table.rid_list)

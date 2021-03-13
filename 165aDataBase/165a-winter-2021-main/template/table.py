@@ -47,13 +47,14 @@ class Record:
         self.offset = 0
         self.Record_key = Record_key #ex. student_id
         # origin data
-        self.columns = columns #tuple of grades
+        self.columns = list(columns) #tuple of grades
         # latest data
         self.columns_ = columns
         self.tps = 0
         self.update_num = 0
         self.lock_mode = LOCK_UNLOCK
         self.lock_amt = 0
+        self.locker = None
         # self.s_lock = False
         # self.x_lock = False
     
@@ -177,9 +178,8 @@ class Table:
 
     # To Do: inset record to index
     def insert_record(self, *data):
-        self.sem.acquire()
         if data[0] in self.key_list:
-            self.sem.release()
+            # self.sem.release()
             return False
         self.key_list.add(data[0])
         record = None 
@@ -192,18 +192,12 @@ class Table:
         # flag = False
         if len(self.buffer.pool) == 0:
             read = True
+        self.sem.acquire()
         for i in range(self.num_columns + META_DATA_COL_NUM):
             if i == 0:
                 first = True
             else:
                 first = False
-
-            # if read == True:
-            #     prange_ = self.buffer.read_from_disk(self.prange_num, i)
-            #     # self.prange_directory.update({i: []})
-            #     self.buffer.load_prange(prange_)
-            # else:
-            #     # prange_ = self.prange_directory.get(i)[-1]
             prange_ = self.buffer.get_(i, self.prange_num,'in')
             
             if prange_[0].b_page[-1].has_capacity() == True:
@@ -306,7 +300,7 @@ class Table:
                         # self.prange_directory.get(i)[record.prange_pos]
                         # print('265',prange_[0].b_page[-1].num_records, 'page_pos', record.page_pos)
                         prange_[0].b_page[record.page_pos].writeRecord(meta_cols[i - self.num_columns])
-        Lock().releaseLock(LOCK_MUTEX, [record])
+        # Lock().releaseLock(LOCK_MUTEX, [record])
         self.sem.release()
         return True
 
@@ -330,7 +324,7 @@ class Table:
     # To Do: update record to index
     def update_record(self, key, brid, *data, delete):
         # print(data)
-        if len(self.buffer.trash_bin) != 0:
+        if len(self.buffer.buffer_bin) != 0:
             self.merge_start()
         # self.merge_times += 1
         schema = None
@@ -342,6 +336,8 @@ class Table:
         if Lock().check(LOCK_MUTEX, [base_record]) == False:
             self.sem.release()
             return False
+        elif Lock().check(LOCK_MUTEX, [base_record]) == 'pass':
+            pass
         else:
             Lock().addLock(LOCK_MUTEX, [base_record])
         base_record.update_num += 1
@@ -353,7 +349,7 @@ class Table:
         #     return 
         if base_record == None:
             print('record doesnt exist')
-            Lock().releaseLock(LOCK_MUTEX, [base_record])
+            # Lock().releaseLock(LOCK_MUTEX, [base_record])
             self.sem.release()
             return False
         # get current prange position
@@ -361,7 +357,7 @@ class Table:
         prev_record = self.page_directory.get(base_record.indirect)
         if prev_record.rid == None:
             print('None prev_record')
-            Lock().releaseLock(LOCK_MUTEX, [base_record])
+            # Lock().releaseLock(LOCK_MUTEX, [base_record])
             self.sem.release()
             return False
         if delete == True:
@@ -451,10 +447,10 @@ class Table:
         self.addtps(brid,base_record.update_num)
         if delete == True:
             # self.rid_list.remove()
-            Lock().releaseLock(LOCK_MUTEX, [base_record])
+            # Lock().releaseLock(LOCK_MUTEX, [base_record])
             self.sem.release()
             return cur_record
-        Lock().releaseLock(LOCK_MUTEX, [base_record])
+        # Lock().releaseLock(LOCK_MUTEX, [base_record])
         self.sem.release()
         return True
 
@@ -518,7 +514,7 @@ class Table:
                 data = page.readRecord(offset)
                 # print(data)
                 res.append(data)
-        Lock().releaseLock(LOCK_SHARED, [record])
+        # Lock().releaseLock(LOCK_SHARED, [record])
         self.sem.release()
         return res
 

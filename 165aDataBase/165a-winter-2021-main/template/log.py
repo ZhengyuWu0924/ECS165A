@@ -1,4 +1,5 @@
 from template.transaction_worker import TransactionWorker
+from template.lock_manager import Lock
 from template.config import *
 class Log:
     def __init__(self, table, *args):
@@ -39,11 +40,16 @@ class Log:
             self.information.update({key : tempInfo})
         return True
     
-    def commitLog(self, *args):
-        key = args[0][0]
-        # print(key)
+    def commitLog(self, args):
+        key = args[0]
+        if len(args)==3 and isinstance(args[2], list):
+            record = self.table.page_directory.get(self.table.index.locate(args[1], key)[0])
+            Lock().releaseLock(LOCK_SHARED, [record])
+        else:
+            record = self.table.page_directory.get(self.table.index.locate(0, key)[0])
+            Lock().releaseLock(LOCK_MUTEX, [record])            
         # print('\n')
-        tempArgs = args[0][1:]
+        tempArgs = args[1:]
         tempStatus = LOG_COMMIT
         tempInfo = []
         tempInfo.append(tempArgs)
@@ -55,10 +61,16 @@ class Log:
             
         return True
     
-    def rollBack(self, *args):
+    def rollBack(self, args):
+        key = args[0]  
+        if len(args)==3 and isinstance(args[2], list):
+            record = self.table.page_directory.get(self.table.index.locate(args[1], key)[0])
+            Lock().releaseLock(LOCK_SHARED, [record])
+        else:
+            record = self.table.page_directory.get(self.table.index.locate(0, key)[0])
+            Lock().releaseLock(LOCK_MUTEX, [record])          
         if len(self.currentWorking) == 0:
             return
-        key = args[0]
         if key not in self.information:
             return
         self.currentWorking.remove(key)
