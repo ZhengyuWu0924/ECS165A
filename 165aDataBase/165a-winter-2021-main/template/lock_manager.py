@@ -85,9 +85,9 @@ class Lock:
         if threading.current_thread() is not threading.main_thread():
             thread = threading.get_ident()
         if mode == LOCK_MUTEX:
-            if record[0].lock_mode == LOCK_UNLOCK and record[0].lock_amt == 0:
+            if record[0].lock_mode == LOCK_UNLOCK or record[0].lock_amt == 0:
                 return True
-            if record[0].locker == thread:
+            elif record[0].locker == thread:
                 return 'pass'
             
         if mode == LOCK_SHARED:
