@@ -32,16 +32,19 @@ class Transaction:
 
     # If you choose to implement this differently this method must still return True if transaction commits or False on abort
     def run(self):
+        # self.sem.acquire()
+        # print(len(self.queries))
         for query, args in self.queries:
+            # print(query, args)
             result = query(*args)
             self.log.writeLog(args)
             # If the query has failed the transaction should abort
             # print(result)
-            if result == False:
-                self.sem.acquire()
-                print('---aborting', query, args,'----')
-                self.sem.release()
+            if result == False:  
+                # print('---aborting', threading.current_thread(), args,'----')
+                # self.sem.release()
                 return self.abort(args)
+        # self.sem.release()
         return self.commit()
 
     def abort(self, args):

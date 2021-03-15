@@ -104,6 +104,7 @@ class Table:
         self.merge_times = 0
         self.num_index = 0
         self.sem = threading.RLock()
+        self.merge_start()
 
         # RIDs are shared in one table
         # once a record, take out one RID from the pool
@@ -179,6 +180,7 @@ class Table:
     # To Do: inset record to index
     def insert_record(self, *data):
         if data[0] in self.key_list:
+            # print(data, 'key existed----')
             # self.sem.release()
             return False
         self.key_list.add(data[0])
@@ -407,9 +409,6 @@ class Table:
                         data_ = None
                     # print('176',prev_record.rid, prev_record.prange_pos,
                     # prev_record.page_pos, data_)
-            # if
-            # self.prange_directory.get(i)[cur_prange_pos].t_page[-1].has_capacity()
-            # == True:
             prange_ = self.buffer.get_(i, cur_prange_pos, 'up')
             if prange_[0].t_page[-1].has_capacity():
                 if i < self.num_columns:

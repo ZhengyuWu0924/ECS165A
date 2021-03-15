@@ -51,12 +51,12 @@ class Bufferpool:
                     prange_list = self.pool.pop(prg_pos)
                     self.pool[prg_pos] = prange_list
             return prange_list[col]
-        elif prg_pos in self.trash_bin:
+        elif prg_pos in self.buffer_bin:
             # index = self.trash_prg_num_list.index(prg_pos)
             # print('trash index', index)
             prange_list = self.buffer_bin.pop(prg_pos)
             trash_list = self.pool.pop(next(iter(self.pool)))
-            self.trash_bin[trash_list[0][0].prange_id] = trash_list
+            self.buffer_bin[trash_list[0][0].prange_id] = trash_list
             self.pool[prg_pos] = prange_list
             return prange_list[col]
         # searching in disk
@@ -79,7 +79,7 @@ class Bufferpool:
     def findTrash(self, prg_pos):
         if len(self.buffer_bin) == 0:
             return -1
-        if prg_pos in self.trash_bin:
+        if prg_pos in self.buffer_bin:
             print('found')
             return self.buffer_bin[prg_pos]
         # print(self.trash_bin)
@@ -93,7 +93,7 @@ class Bufferpool:
             disk_list = self.buffer_bin.pop(next(iter(self.buffer_bin)))
             self.write_to_disk(disk_list)
             self.sem.release()
-        self.trash_bin[trash_list[0][0].prange_id] = trash_list
+        self.buffer_bin[trash_list[0][0].prange_id] = trash_list
     
     def load_prange(self, prange):
         if prange == None:

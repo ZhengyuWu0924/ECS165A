@@ -4,6 +4,7 @@ from template.transaction import Transaction
 from template.transaction_worker import TransactionWorker
 from template.config import init
 import threading
+import xlrd
 
 from random import choice, randint, sample, seed
 
@@ -32,7 +33,7 @@ for i in range(num_threads):
     transaction_workers.append(TransactionWorker())
     transaction_workers[i].add_transaction(insert_transactions[i])
 
-for i in range(0, 5):
+for i in range(0, 1000):
     key = 92106429 + i
     keys.append(key)
     records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
@@ -45,7 +46,6 @@ for i in range(num_threads):
     transaction_workers[i].run()
 
 for thread in threading.enumerate():
-    # thread.should_abort_immediately = True
     if thread is not threading.main_thread():
         thread.join()
 

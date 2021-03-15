@@ -44,33 +44,23 @@ for i in range(0, 1000):
     keys.append(key)
     i = i % num_threads
     records[key] = [key, randint(i * 20, (i + 1) * 20), randint(i * 20, (i + 1) * 20), randint(i * 20, (i + 1) * 20), randint(i * 20, (i + 1) * 20)]
-    # print(records[key])
     q = Query(grades_table)
-    # print(insert_transactions[i])
     insert_transactions[i].add_query(q.insert, *records[key], table=grades_table)
-    # print('insert to ', i, key)
     worker_keys[i][key] = True
 
 t = 0
 _records = [records[key] for key in keys]
-# print('54',_records)
 for c in range(grades_table.num_columns):
     _keys = sorted(list(set([record[c] for record in _records])))
-    # print('57',_keys)
     index = {v: [record for record in _records if record[c] == v] for v in _keys}
-    # print(index)
     for key in _keys:
         found = True
-        # print(worker_keys)
         for record in index[key]:
             if record[0] not in worker_keys[t % num_threads]:
                 found = False
         if found:
-            # print(key)
-            # print(c)
             query = Query(grades_table)
             select_transactions[t % num_threads].add_query(query.select, key, c, [1, 1, 1, 1, 1],table=grades_table)
-            # print('select to ', t % num_threads, key)
         t += 1
 
 for j in range(0, num_threads):
@@ -82,14 +72,9 @@ for j in range(0, num_threads):
             records[key][i] = value
             query = Query(grades_table)
             update_transactions[j].add_query(query.update, key, *updated_columns,table=grades_table)
-            # print('update to ', j, key)
-            # print(updated_columns)
-            # print(records[key])
             updated_columns = [None, None, None, None, None]
-# i = 0
+
 for transaction_worker in transaction_workers:
-    # print(i)
-    # i += 1
     transaction_worker.run()
 
 for thread in threading.enumerate():
@@ -99,14 +84,12 @@ for thread in threading.enumerate():
 score = len(keys)
 for key in keys:
     correct = records[key]
-    # print(correct)
     query = Query(grades_table)
-    #TODO: modify this line based on what your SELECT returns
+
     result = query.select(key, 0, [1, 1, 1, 1, 1])[0].columns
-    # print(result)
     if correct != result:
         print('select error on primary key', key, ':', result, ', correct:', correct)
         score -= 1
 print('Score', score, '/', len(keys))
-# print(grades_table.rid_list)
+
 db.close()
